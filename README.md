@@ -5,6 +5,17 @@ This project is a flexible, standalone WebGL renderer built on PixiJS, designed 
 
 Implementation uses *Girls' Frontline* models (specifically M1903 Springfield), but the underlying architecture is strictly decoupled. The main rendering happens via the core dependencies over at `lib/` through `app.js` & `chibi.js` over at `js/`. Any DOM manipulation (UI, updates etc.) is handled using 'main.js', which communicates exclusively via state callbacks. This makes it incredibly easy to swap/add in models from other games, implement new features, or seamlessly embed the viewer into existing websites and web apps.
 
+## Stack
+
+| Library | Version | Purpose |
+|---|---|---|
+| [PixiJS](https://pixijs.com/) | v6.5.10 | WebGL renderer, stage, ticker |
+| [pixi-live2d-display](https://github.com/guansss/pixi-live2d-display) | v0.5.0-beta | Cubism 2 + 3 integration |
+| [Live2D Cubism 2.1 SDK](https://www.live2d.com/) | 2.1 | Cubism 2 model core |
+| [Live2D Cubism 4 SDK](https://www.live2d.com/) | 4.x | Cubism 3/4 model core |
+| [pixi-spine](https://github.com/pixijs/pixi-spine) | v4 (custom build) | Spine 2.x rendering |
+| spine2-skeleton-binary | — | Spine 2.1.27 binary→JSON shim |
+
 ## Project Structure
 ```text
 ├── index.html                      # Entry point (mode tabs, PixiJS v6 compat stubs)
@@ -291,19 +302,6 @@ Useful debug scripts included for troubleshooting:
 - `debug-switchback.mjs` (L2D→chibi→L2D cycle with full console output)
 
 > **Note**: Use headed mode (`headless: false`) for debugging. Headless Playwright lacks WebGL support required for the C2 SDK.
-
-
-
-## Stack
-
-| Library | Version | Purpose |
-|---|---|---|
-| [PixiJS](https://pixijs.com/) | v6.5.10 | WebGL renderer, stage, ticker |
-| [pixi-live2d-display](https://github.com/guansss/pixi-live2d-display) | v0.5.0-beta | Cubism 2 + 3 integration |
-| [Live2D Cubism 2.1 SDK](https://www.live2d.com/) | 2.1 | Cubism 2 model core |
-| [Live2D Cubism 4 SDK](https://www.live2d.com/) | 4.x | Cubism 3/4 model core |
-| [pixi-spine](https://github.com/pixijs/pixi-spine) | v4 (custom build) | Spine 2.x rendering |
-| spine2-skeleton-binary | — | Spine 2.1.27 binary→JSON shim |
 
 ## Known Issues & Workarounds
 - Stirring Mermaid C2: only daiji_idle_01.mtn, no tap_body motions — app.js uses `model.motion()` which plays random motion from group; if group has no motions, nothing happens
