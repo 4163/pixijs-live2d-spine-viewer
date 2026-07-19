@@ -20,6 +20,7 @@ Implementation uses *Girls' Frontline* models (specifically M1903 Springfield), 
 ```text
 ├── index.html                      # Entry point (mode tabs, PixiJS v6 compat stubs)
 ├── icon.png                        # Favicon / PWA icon
+├── gfl-spinner.svg                 # Animated loading icon (toggled by main.js state callbacks)
 ├── css/
 │   ├── main.css                    # Core styles, theme, toolbar, pills, transitions
 │   └── mobile.css                  # Mobile-responsive overrides
@@ -202,6 +203,7 @@ window.__viewerCallbacks = {
   onStateChange: function(state) {
     // state is a structured object, e.g. { type: 'ready', mode: 'live2d', modelName: 'M1903' }
     // Generates dynamic DOM/UI text strictly on the Controller side.
+    // This is also where main.js toggles the gfl-spinner.svg loading icon's visibility based on state.
   },
   onDormChange:  function(active) { /* toggle button class, etc. */ }
 };
