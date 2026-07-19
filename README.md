@@ -30,7 +30,7 @@ Implementation uses *Girls' Frontline* models (specifically M1903 Springfield), 
 │   ├── chibi.js                    # Spine chibi viewer (initChibiMode / destroyChibi, repositionChibi)
 │   ├── config.js                   # VIEWER_CONFIG (relativeDraw, keepOriginalDimensions, layout)
 │   ├── main.js                     # PIXI init, manifest loading, mode switching, resize, boot
-│   ├── pan-zoom.js                 # Stage-level pan & zoom (drag, wheel, sessionStorage persistence)
+│   ├── pan-zoom.js                 # Stage-level pan & zoom controller (decoupled API)
 │   └── playground.js               # Multi-model Spine playground (scatter, drag, localStorage persistence)
 ├── lib/
 │   ├── live2d.min.js               # Cubism 2.1 SDK for Web (C2 models)
@@ -189,7 +189,7 @@ The search is **definitively complete**. Only Classic Witch and Stirring Mermaid
 
 ### Integration Hooks (`window.__viewerCallbacks`)
 
-`chibi.js`, `app.js`, and `playground.js` never touch the DOM directly. Instead they emit state objects to optional hooks set on `window.__viewerCallbacks`:
+The core model controllers (`chibi.js`, `app.js`, `playground.js`) and the network cache (`cache.js`) never touch the DOM directly. Instead, the controllers emit state objects to optional hooks set on `window.__viewerCallbacks`. Utilities like `resize.js` and `pan-zoom.js` *do* interact with the DOM, but remain fully decoupled by accepting generic arguments and exposing an API rather than hardcoding HTML elements. Project-specific UI logic is strictly isolated to `main.js`.
 
 | Hook | Called when |
 |------|-------------|
@@ -274,8 +274,7 @@ A **Dorm** toggle in the mode tab row swaps in `skeleton_dorm.skel` and, when pr
 Stage-level transform with pointer drag + wheel zoom, implemented directly against the PixiJS `app.stage`. 
 - Zoom clamped 0.2x-5.0x, cursor-relative zoom. 
 - Stage position clamped to `maxBound * 2 * scale`. 
-- State is persisted via browser `sessionStorage` (resets when closing the tab).
-- Integrates seamlessly with specific model interactions by delegating pointer events.
+- Fully decoupled API (`enable`, `disable`, `suspend`, `resume`) that leaves UI wiring to `main.js`.
 
 ### Multi-Model Playground (`js/playground.js`)
 An experimental mode demonstrating how to manage multiple Spine instances simultaneously on a shared PIXI stage.

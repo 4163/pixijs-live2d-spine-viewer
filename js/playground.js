@@ -216,7 +216,7 @@
       spine.onUp = (e) => {
         if (!dragging) return;
         dragging = false;
-        window.__playgroundDragging = false;
+        if (window.panZoomController) window.panZoomController.resume();
 
         const newPosition = e.data.getLocalPosition(spine.parent);
         const dx = newPosition.x - dragStartX;
@@ -317,7 +317,7 @@
         }
         
         dragging = true;
-        window.__playgroundDragging = true;
+        if (window.panZoomController) window.panZoomController.suspend();
         const newPosition = e.data.getLocalPosition(spine.parent);
         dragStartX = newPosition.x;
         dragStartY = newPosition.y;

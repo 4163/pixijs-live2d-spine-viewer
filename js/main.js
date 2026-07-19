@@ -176,33 +176,43 @@
 
   // ── Pan & Zoom init ──────────────────────────────────────
   if (typeof window.initPanZoom === 'function') {
-    window.initPanZoom(sharedApp, canvasWrap, 'pan-toggle', 'reset-view');
-  }
-
-  // Sync PixiJS stage cursor with pan-mode state
-  // (stage has a massive hitArea so it acts as the "background" cursor;
-  //  individual interactive objects like chibi spines override when hovered)
-  const panToggle = document.getElementById('pan-toggle');
-  if (panToggle) {
-    const syncStageCursor = () => {
-      const isPan = panToggle.getAttribute('aria-pressed') === 'true';
-      sharedApp.stage.cursor = isPan ? 'move' : 'default';
+    const pz = window.initPanZoom(sharedApp);
+    window.panZoomController = pz;
+    
+    const panToggleBtn = document.getElementById('pan-toggle');
+    const resetBtn = document.getElementById('reset-view');
+    
+    let isPanMode = localStorage.getItem('panMode') === 'true';
+    if (isPanMode) pz.enable();
+    
+    // Sync PixiJS stage cursor and UI with pan-mode state
+    // (stage has a massive hitArea so it acts as the "background" cursor;
+    //  individual interactive objects like chibi spines override when hovered)
+    const syncUI = () => {
+      const active = pz.isActive();
+      if (panToggleBtn) panToggleBtn.setAttribute('aria-pressed', active);
+      canvasWrap.classList.toggle('pan-mode', active);
+      sharedApp.stage.cursor = active ? 'move' : 'default';
     };
-    syncStageCursor(); // set initial state
-    panToggle.addEventListener('click', () => {
-      // defer so pan-zoom.js flips aria-pressed first
-      requestAnimationFrame(syncStageCursor);
-    });
-  }
-
-  // Reset button: also clear playground duplicates
-  const resetViewBtn = document.getElementById('reset-view');
-  if (resetViewBtn) {
-    resetViewBtn.addEventListener('click', () => {
-      if (activePillId === 'playground' && typeof window.resetPlayground === 'function') {
-        window.resetPlayground();
-      }
-    });
+    syncUI();
+    
+    if (panToggleBtn) {
+      panToggleBtn.addEventListener('click', () => {
+        const active = pz.toggle();
+        localStorage.setItem('panMode', active);
+        syncUI();
+      });
+    }
+    
+    // Reset button: resets pan/zoom, repositions model, clears playground duplicates
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        pz.reset();
+        if (currentMode === 'live2d' && typeof window.repositionLive2D === 'function') window.repositionLive2D();
+        if (currentMode === 'spine' && typeof window.repositionChibi === 'function') window.repositionChibi();
+        if (activePillId === 'playground' && typeof window.resetPlayground === 'function') window.resetPlayground();
+      });
+    }
   }
 
 
