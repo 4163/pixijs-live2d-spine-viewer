@@ -285,8 +285,6 @@ An experimental mode demonstrating how to manage multiple Spine instances simult
 - **Dynamic Anchoring**: Uses `spine.getLocalBounds()` to correctly position generated sprites relative to the varying physical dimensions of different skeletons.
 - **Touch & Desktop Parity**: Native detection of touch screens. Maps Right-Click to Duplicate and Double-Right-Click to Delete on desktop, gracefully adapting to Double-Tap (Duplicate) and Triple-Tap (Delete) on mobile/touch interfaces.
 
-
-
 ## Playwright Tests
 
 Test scripts live in `playwright/` and require Playwright:
