@@ -1,0 +1,28 @@
+{
+    "type": "Live2D Model Setting",
+    "name": "Springfield - Classic Witch (Damaged)",
+    "model": "springfield.model.moc",
+    "textures": [
+        "springfield.1024/texture_00.png"
+    ],
+    "layout": {
+        "x": 0, "y": 0, "center_x": 0.0, "center_y": 0.0, "height": 2.0
+    },
+    "hit_areas": [
+        {"name": "body", "id": "D_REF.BODY"}
+    ],
+    "motions": {
+        "idle": [
+            {"file": "motions/daiji_idle_01.mtn", "fade_in": 2000, "fade_out": 2000},
+            {"file": "motions/wait_1.mtn", "fade_in": 2000, "fade_out": 2000}
+        ],
+        "tap_body": [
+            {"file": "motions/login.mtn", "fade_out": 0},
+            {"file": "motions/broken_1.mtn", "fade_out": 0},
+            {"file": "motions/broken_2.mtn", "fade_out": 0},
+            {"file": "motions/broken_3.mtn", "fade_out": 0},
+            {"file": "motions/broken_4.mtn", "fade_out": 0},
+            {"file": "motions/broken_5.mtn", "fade_out": 0}
+        ]
+    }
+}

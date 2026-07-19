@@ -1,0 +1,27 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "normal.moc3",
+    "Textures": [
+      "textures/texture_00.png"
+    ],
+    "Physics": null,
+    "Motions": {
+      "idle": [
+        { "File": "motions/daiji_idle_01.motion3.json", "FadeInTime": 2.0, "FadeOutTime": 2.0 }
+      ]
+    }
+  },
+  "HitAreas": [
+    { "Name": "head", "Id": "D_REF.FACE" },
+    { "Name": "body", "Id": "D_REF.BODY" },
+    { "Name": "arm", "Id": "D_REF.ARM_L" }
+  ],
+  "Groups": [
+    {
+      "Target": "Parameter",
+      "Name": "LipSync",
+      "Ids": [ "ParamMouthOpenY" ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+@media (pointer: coarse) {
+  #toolbar, #model-nav { user-select: none; }
+  body { -webkit-touch-callout: none; }
+  * { -webkit-tap-highlight-color: transparent; }
+
+  #theme-toggle:hover, #reset-view:hover, #github-link:hover {
+    background: var(--panel-bg); color: var(--text-color);
+  }
+  #pan-toggle:hover:not([aria-pressed="true"]) { background: var(--panel-bg); color: var(--text-color); }
+  #theme-toggle:active, #reset-view:active, #github-link:active {
+    background: var(--pill-hover); color: var(--hover-text-color);
+  }
+}
+
+@media (max-width: 767px) {
+  #model-pills { display: none; }
+  
+  #model-select-visible {
+    display: block; width: 100%; max-width: 300px;
+    padding: 10px; border-radius: 12px;
+    background: var(--panel-bg); color: var(--text-color);
+    border: 1px solid var(--border-color);
+    font-size: 16px;
+  }
+}

@@ -1,0 +1,44 @@
+{
+    "type": "Live2D Model Setting",
+    "name": "Springfield",
+    "model": "springfield.model.moc",
+    "textures": [
+        "springfield.1024/texture_00.png"
+    ],
+    "physics": "springfield.physics.json",
+    "layout": {
+        "x": 0,
+        "y": 0,
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "height": 1.7
+    },
+    "hit_areas": [
+        {"name": "head", "id": "D_REF.HEAD"},
+        {"name": "body", "id": "D_REF.BODY"},
+        {"name": "leg", "id": "D_REF.LEG"}
+    ],
+    "motions": {
+        "idle": [
+            {"file": "motions/daiji_idle_01.mtn", "fade_in": 2000, "fade_out": 2000},
+            {"file": "motions/wait_1.mtn", "fade_in": 2000, "fade_out": 2000},
+            {"file": "motions/wait_2.mtn", "fade_in": 2000, "fade_out": 2000},
+            {"file": "motions/login.mtn", "fade_in": 2000, "fade_out": 2000},
+            {"file": "motions/wedding.mtn", "fade_in": 2000, "fade_out": 2000}
+        ],
+        "tap_head": [
+            {"file": "motions/touch_3.mtn", "fade_out": 0}
+        ],
+        "tap_body": [
+            {"file": "motions/touch_1.mtn", "fade_out": 0},
+            {"file": "motions/touch_2.mtn", "fade_out": 0}
+        ],
+        "tap_leg": [
+            {"file": "motions/touch_4.mtn", "fade_out": 0},
+            {"file": "motions/touch_5.mtn", "fade_out": 0}
+        ],
+        "shake": [
+            {"file": "motions/shake.mtn", "fade_in": 500, "fade_out": 0}
+        ]
+    }
+}

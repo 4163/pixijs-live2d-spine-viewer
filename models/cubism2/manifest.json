@@ -1,0 +1,26 @@
+﻿[
+    {
+        "json":  "models/cubism2/springfield_costume1/springfield.model.json",
+        "name":  "Classic Witch",
+        "id":  "springfield_costume1",
+        "type":  "cubism2"
+    },
+    {
+        "json":  "models/cubism2/springfield_costume1_damaged/springfield.model.json",
+        "name":  "Classic Witch (Damaged)",
+        "id":  "springfield_costume1_damaged",
+        "type":  "cubism2"
+    },
+    {
+        "json":  "models/cubism2/springfield_costume4/springfield.model.json",
+        "name":  "Stirring Mermaid",
+        "id":  "springfield_costume4",
+        "type":  "cubism2"
+    },
+    {
+        "json":  "models/cubism2/springfield_costume4_damaged/springfield.model.json",
+        "name":  "Stirring Mermaid (Damaged)",
+        "id":  "springfield_costume4_damaged",
+        "type":  "cubism2"
+    }
+]

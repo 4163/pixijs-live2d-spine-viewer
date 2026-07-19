@@ -1,0 +1,39 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "normal.moc3",
+    "Textures": [
+      "textures/texture_00.png"
+    ],
+    "Physics": null,
+    "Motions": {
+      "idle": [
+        { "File": "motions/daiji_idle_01.motion3.json", "FadeInTime": 2.0, "FadeOutTime": 2.0 },
+        { "File": "motions/login.motion3.json", "FadeInTime": 2.0, "FadeOutTime": 2.0 },
+        { "File": "motions/wait_1.motion3.json", "FadeInTime": 2.0, "FadeOutTime": 2.0 },
+        { "File": "motions/wait_2.motion3.json", "FadeInTime": 2.0, "FadeOutTime": 2.0 },
+        { "File": "motions/wedding.motion3.json", "FadeInTime": 2.0, "FadeOutTime": 2.0 }
+      ],
+      "tap_head": [
+        { "File": "motions/touch_3.motion3.json", "FadeOutTime": 0.0 }
+      ],
+      "tap_body": [
+        { "File": "motions/touch_1.motion3.json", "FadeOutTime": 0.0 },
+        { "File": "motions/touch_2.motion3.json", "FadeOutTime": 0.0 }
+      ],
+      "tap_arm": [
+        { "File": "motions/touch_4.motion3.json", "FadeOutTime": 0.0 },
+        { "File": "motions/touch_5.motion3.json", "FadeOutTime": 0.0 }
+      ],
+      "shake": [
+        { "File": "motions/shake.motion3.json", "FadeInTime": 0.5, "FadeOutTime": 0.0 }
+      ]
+    }
+  },
+  "HitAreas": [
+    { "Name": "head", "Id": "D_REF.FACE" },
+    { "Name": "body", "Id": "D_REF.BODY" },
+    { "Name": "arm", "Id": "D_REF.ARM_L" }
+  ],
+  "Groups": []
+}

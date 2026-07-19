@@ -1,0 +1,26 @@
+﻿[
+    {
+        "json":  "models/cubism3/m1903_5/normal/normal.model3.json",
+        "name":  "Classic Witch",
+        "id":  "classic_witch_c3",
+        "type":  "cubism3"
+    },
+    {
+        "json":  "models/cubism3/m1903_5/destroy/destroy.model3.json",
+        "name":  "Classic Witch (Damaged)",
+        "id":  "classic_witch_c3_damaged",
+        "type":  "cubism3"
+    },
+    {
+        "json":  "models/cubism3/m1903_1107/normal/normal.model3.json",
+        "name":  "Stirring Mermaid",
+        "id":  "stirring_mermaid_c3",
+        "type":  "cubism3"
+    },
+    {
+        "json":  "models/cubism3/m1903_1107/destroy/destroy.model3.json",
+        "name":  "Stirring Mermaid (Damaged)",
+        "id":  "stirring_mermaid_c3_damaged",
+        "type":  "cubism3"
+    }
+]

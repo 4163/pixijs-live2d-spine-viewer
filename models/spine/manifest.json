@@ -1,0 +1,34 @@
+﻿[
+    {
+        "dir":  "models/spine/default",
+        "name":  "Default",
+        "id":  "spine_default",
+        "type":  "spine"
+    },
+    {
+        "dir":  "models/spine/classic_witch",
+        "name":  "Classic Witch",
+        "id":  "spine_classic_witch",
+        "type":  "spine",
+        "dormAtlas":  true
+    },
+    {
+        "dir":  "models/spine/o_holy_night",
+        "name":  "O Holy Night",
+        "id":  "spine_o_holy_night",
+        "type":  "spine",
+        "dormAtlas":  true
+    },
+    {
+        "dir":  "models/spine/queen_in_radiance",
+        "name":  "Queen in Radiance",
+        "id":  "spine_queen_in_radiance",
+        "type":  "spine"
+    },
+    {
+        "dir":  "models/spine/stirring_mermaid",
+        "name":  "Stirring Mermaid",
+        "id":  "spine_stirring_mermaid",
+        "type":  "spine"
+    }
+]
