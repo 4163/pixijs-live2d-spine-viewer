@@ -1,0 +1,5 @@
+.agents/
+
+Makefile
+pipeline.instructions.md
+push-pipeline.py
