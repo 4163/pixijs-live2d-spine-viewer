@@ -23,7 +23,7 @@ Implementation uses *Girls' Frontline* models (specifically M1903 Springfield), 
 ## Project Structure
 ```text
 ├── index.html                      # Entry point (mode tabs, PixiJS v6 compat stubs)
-├── icon.png                        # Favicon / PWA icon
+├── icon.png                        # Favicon
 ├── gfl-spinner.svg                 # Animated loading icon (toggled by main.js state callbacks)
 ├── css/
 │   ├── main.css                    # Core styles, theme, toolbar, pills, transitions
