@@ -7,7 +7,7 @@
 ## Overview
 This project is a flexible, standalone WebGL renderer built on PixiJS, designed to display Live2D (Cubism 2 and 3) and Spine 2.x skeletal animations. 
 
-Implementation uses *Girls' Frontline* models (specifically M1903 Springfield), but the underlying architecture is strictly decoupled. The main rendering happens via the core dependencies over at `lib/` through `app.js` & `chibi.js` over at `js/`. Any DOM manipulation (UI, updates etc.) is handled using 'main.js', which communicates exclusively via state callbacks. This makes it incredibly easy to swap/add in models from other games, implement new features, or seamlessly embed the viewer into existing websites and web apps.
+Implementation uses *Girls' Frontline* models (specifically M1903 Springfield), but the underlying architecture is strictly decoupled. The main rendering happens via the core dependencies over at `lib/` through `app.js` & `chibi.js` over at `js/`. Any DOM manipulation (UI, updates etc.) is handled using `main.js`, which communicates exclusively via state callbacks. This makes it incredibly easy to swap/add in models from other games, implement new features, or seamlessly embed the viewer into existing websites and web apps.
 
 ## Stack
 
