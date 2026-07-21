@@ -48,7 +48,7 @@ Implementation uses *Girls' Frontline* models (specifically M1903 Springfield), 
 │   ├── cubism2/                    # Cubism 2 model dirs + manifest
 │   ├── cubism3/                    # Cubism 3 model dirs (m1903_5, m1903_1107) + manifest
 │   └── spine/                      # Spine chibi model dirs + manifest
-└── README.md
+└── README.md						# Currently being viewed
 ```
 
 > **Demo content:** Bundled with Girls' Frontline Springfield (M1903) assets as a reference implementation. Swap or add in your own models by editing the manifest files under `models/`.
