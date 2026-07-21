@@ -1,5 +1,9 @@
 # PixiJS Live2D & Spine WebGL Viewer
 
+## Live Demo
+> PixiJS Live2D & Spine Viewer  
+> https://x4163.netlify.app/pixi
+
 ## Overview
 This project is a flexible, standalone WebGL renderer built on PixiJS, designed to display Live2D (Cubism 2 and 3) and Spine 2.x skeletal animations. 
 
