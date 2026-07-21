@@ -156,15 +156,7 @@
         }));
         icon.anchor.set(0.5, 0.5);
         const bounds = spine.getLocalBounds();
-        let iconX = bounds.x + bounds.width;
-        let iconY = bounds.y;
-        
-        // Specifically pull the icon left for Queen in Radiance (large bounding box)
-        if (entry.id === 'spine_queen_in_radiance') {
-          iconX -= 45;
-        }
-        
-        icon.position.set(iconX, iconY);
+        icon.position.set(bounds.x + bounds.width, bounds.y);
         icon.visible = duplicateCounts[entry.id] > 0;
         spine.addChild(icon);
         spine.duplicateIcon = icon;
@@ -432,6 +424,20 @@
         })
       );
       playgroundSpines = results.filter(Boolean);
+
+      // Rebuild duplicate counts from restored state so origin icons show correctly
+      duplicateCounts = {};
+      for (const s of playgroundSpines) {
+        const id = s.originId;
+        if (!s.isOrigin) {
+          duplicateCounts[id] = (duplicateCounts[id] || 0) + 1;
+        } else if (duplicateCounts[id] === undefined) {
+          duplicateCounts[id] = 0;
+        }
+      }
+      for (const originId in duplicateCounts) {
+        updateOriginIcon(originId);
+      }
     } else {
       // Random generation (rejection sampling for better scatter)
       const w = app.screen.width;
