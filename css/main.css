@@ -133,6 +133,7 @@ body {
     top: 60px;
     background: unset;
     backdrop-filter: unset;
+    pointer-events: none;
   }
   .playground-controls-wrapper {
     display: flex;
