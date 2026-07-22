@@ -3,3 +3,6 @@
 Makefile
 pipeline.instructions.md
 push-pipeline.py
+
+playwright/*
+!playwright/*.mjs

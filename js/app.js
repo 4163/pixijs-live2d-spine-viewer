@@ -29,8 +29,9 @@
     const w = currentModel.internalModel.originalWidth;
     const h = currentModel.internalModel.originalHeight;
     const cfgScale = currentModel._cfgScale || 1.0;
-    const scaleBase = Math.min(app.screen.width / w, app.screen.height / h) * 0.9;
-    const scale = cfg.keepOriginalDimensions ? Math.min(scaleBase, 1.0) * cfgScale : scaleBase * cfgScale;
+    const fitRatio = cfg.screenFitRatio !== undefined ? cfg.screenFitRatio : 0.9;
+    const scaleBase = Math.min(app.screen.width / w, app.screen.height / h) * fitRatio;
+    const scale = Math.min(scaleBase, 1.0) * cfgScale;
     currentModel.scale.set(scale);
   }
   window.repositionLive2D = repositionLive2D;
@@ -92,8 +93,9 @@
     model._cfgScale = entryCfg.scale || 1.0;
     model._entryId = entry.id;
 
-    const scaleBase = Math.min(app.screen.width / w, app.screen.height / h) * 0.9;
-    const scale = vc.keepOriginalDimensions ? Math.min(scaleBase, 1.0) * model._cfgScale : scaleBase * model._cfgScale;
+    const fitRatio = vc.screenFitRatio !== undefined ? vc.screenFitRatio : 0.9;
+    const scaleBase = Math.min(app.screen.width / w, app.screen.height / h) * fitRatio;
+    const scale = Math.min(scaleBase, 1.0) * model._cfgScale;
     const baseY = vc.live2dBaseY !== undefined ? vc.live2dBaseY : 0.5;
     const offsetY = (entryCfg.offsetY || 0) * app.screen.height;
 

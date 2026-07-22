@@ -1,5 +1,4 @@
 @media (pointer: coarse) {
-  #toolbar, #model-nav { user-select: none; }
   body { -webkit-touch-callout: none; }
   * { -webkit-tap-highlight-color: transparent; }
 

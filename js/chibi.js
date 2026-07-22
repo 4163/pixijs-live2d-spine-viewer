@@ -36,7 +36,18 @@
     const cfg = window.VIEWER_CONFIG || {};
     if (cfg.relativeDraw === false) return;
     const baseY = cfg.chibiBaseY !== undefined ? cfg.chibiBaseY : 0.80;
+    
+    // Position
     currentSpine.position.set(app.screen.width / 2, app.screen.height * baseY);
+    
+    // Scale dynamically: only shrink if it exceeds fitRatio of the canvas
+    const cfgScale = currentSpine._cfgScale || 1.0;
+    const w = currentSpine._origWidth || 1000;
+    const h = currentSpine._origHeight || 1000;
+    const fitRatio = cfg.screenFitRatio !== undefined ? cfg.screenFitRatio : 0.9;
+    const scaleBase = Math.min(app.screen.width / w, app.screen.height / h) * fitRatio;
+    const scale = Math.min(scaleBase, 1.0) * cfgScale;
+    currentSpine.scale.set(scale);
   }
   window.repositionChibi = repositionChibi;
 
@@ -189,20 +200,31 @@
     // Step 5: Create Spine display object
     const vc = window.VIEWER_CONFIG || {};
     const entryCfg = (vc.layout && vc.layout[entry.id]) || {};
-    const scale = entryCfg.scale || 1.0;
+    const cfgScale = entryCfg.scale || 1.0;
     const offsetY = (entryCfg.offsetY || 0) * app.screen.height;
 
     const baseY = vc.chibiBaseY !== undefined ? vc.chibiBaseY : 0.80;
     
     try {
       spine = new PIXI.spine.Spine(skeletonData);
-      spine.scale.set(scale);
+      
+      spine._cfgScale = cfgScale;
+      spine._entryId = entry.id;
+      
+      spine._origWidth = skeletonData.width || spine.width || 1000;
+      spine._origHeight = skeletonData.height || spine.height || 1000;
+
+      const fitRatio = vc.screenFitRatio !== undefined ? vc.screenFitRatio : 0.9;
+      const scaleBase = Math.min(app.screen.width / spine._origWidth, app.screen.height / spine._origHeight) * fitRatio;
+      const initialScale = Math.min(scaleBase, 1.0) * cfgScale;
+
+      spine.scale.set(initialScale);
       spine.position.set(app.screen.width / 2, app.screen.height * baseY + offsetY);
       spine.eventMode = 'static';
       spine.interactive = true;
       app.stage.addChild(spine);
     } catch (e) {
-      console.warn(`${entry.name}: spine creation error ΓÇö`, e.message || e);
+      console.warn(`${entry.name}: spine creation error —`, e.message || e);
       if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) window.__viewerCallbacks.onStateChange({ type: 'error', modelName: entry.name });
       return;
     }

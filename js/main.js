@@ -113,7 +113,7 @@
       const spinner = document.getElementById('loading-spinner');
       if (spinner) {
         if (state.type === 'loading' || state.type === 'playground-loading') {
-          spinner.style.display = 'block';
+          spinner.style.display = 'flex';
           spinner.setAttribute('aria-hidden', 'false');
         } else if (['ready', 'error', 'playground-ready', 'playground-empty'].includes(state.type)) {
           spinner.style.display = 'none';

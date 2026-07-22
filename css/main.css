@@ -54,22 +54,27 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 16 / 9;
+  width: min(100vw, calc(100dvh * 16 / 9));
   z-index: 50;
   pointer-events: none;
   filter: invert(0.9);
-  user-select: none;
+  line-height: 0;
 }
 #loading-spinner img {
-  width: 15vmin;
-  height: 15vmin;
+  width: 10.625%; /* 204 / 1920 */
+  aspect-ratio: 1;
   opacity: 0.5;
-  user-select: none;
 }
 [data-theme="light"] #loading-spinner {
   filter: contrast(0.8);
 }
 
 /* Pan-mode cursor is handled by PixiJS stage.cursor */
+
+#toolbar, #model-nav { user-select: none; }
 
 #toolbar {
   position: absolute; top: 16px; left: 16px; right: 16px;
@@ -92,7 +97,7 @@ body {
   border-radius: 20px; height: 36px; padding: 0 16px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s;
-  backdrop-filter: blur(4px); user-select: none;
+  backdrop-filter: blur(4px);
 }
 #theme-toggle:hover, #pan-toggle:hover, #reset-view:hover, #github-link:hover { background: var(--pill-hover); color: var(--hover-text-color); }
 #pan-toggle[aria-pressed="true"] { background: var(--pill-active); color: #fff; border-color: transparent; }
@@ -102,7 +107,7 @@ body {
 #info {
   position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
   background: var(--panel-bg); padding: 6px 16px; border-radius: 12px;
-  font-size: 13px; backdrop-filter: blur(4px); user-select: none;
+  font-size: 13px; backdrop-filter: blur(4px);
   z-index: 20; transition: opacity 0.35s ease 0.45s; white-space: nowrap;
 }
 #info.info-hidden { opacity: 0; }
@@ -125,7 +130,7 @@ body {
 
 @media (max-width: 1070px) {
   body[data-active-pill="playground"] #info {
-    top: calc(16px + 36px + 8px);
+    top: 60px;
     background: unset;
     backdrop-filter: unset;
   }
@@ -147,13 +152,13 @@ body {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    width: calc(100vw - 15px - 15px);
+    width: calc(100vw - 30px);
   }
 }
 
 @media (max-width: 819px) {
   #info {
-    top: calc(16px + 36px + 8px);
+    top: 60px;
   }
 }
 @media (max-width: 400px) {
@@ -161,21 +166,23 @@ body {
     justify-content: center;
   }
   #info {
-    top: calc(16px + 36px + 16px + 29px + 8px);
+    top: 105px;
     background: transparent;
   }
   body[data-active-pill="playground"] #info {
-    top: calc(16px + 36px + 16px + 29px + 8px);
+    top: 105px;
   }
 }
 
 #model-nav {
   position: absolute; bottom: 24px;
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
-  z-index: 10; width: 100vw;
+  display: flex; flex-direction: column; align-items: center;
+  z-index: 10; width: 100vw; pointer-events: none;
 }
 
-#mode-tabs { display: flex; gap: 12px; flex-direction: column-reverse; align-items: end; }
+#mode-tabs { display: flex; gap: 12px; flex-direction: column-reverse;
+  align-items: end; margin-bottom: 12px;
+}
 
 #mode-tabs .wrapper {
   display: flex;
@@ -186,15 +193,14 @@ body {
   background: transparent; border: none; color: var(--text-color);
   padding: 6px 20px; border-radius: 16px; cursor: pointer;
   font-weight: 500; transition: background 0.2s; background: var(--pill-bg);
-  user-select: none;
- }
+  pointer-events: auto;
+}
 .mode-tab.active { background: var(--pill-active); color: #fff; }
 
 #model-pills {
-  display: flex; flex-wrap: nowrap; gap: 8px;
-  overflow-x: auto; white-space: nowrap; max-width: 100vw;
-  padding: 4px 16px 12px 16px;
-  min-height: 48px;
+  display: flex; flex-wrap: nowrap; overflow-x: unset;
+  white-space: nowrap; padding: 0 16px; gap: 8px;
+
   -webkit-overflow-scrolling: touch;
   flex-wrap: wrap;
 }
@@ -205,9 +211,9 @@ body {
   background: var(--pill-bg); border: 1px solid var(--border-color);
   color: var(--text-color); border-radius: 20px; padding: 6px 16px;
   display: flex; align-items: center; gap: 8px; cursor: pointer;
-  transition: all 0.2s; backdrop-filter: blur(4px); user-select: none;
+  transition: all 0.2s; backdrop-filter: blur(4px);
   animation: pillSlideIn 0.35s ease both; flex-grow: 1;
-  justify-content: center;
+  justify-content: center; pointer-events: auto;
 }
 
 @keyframes pillSlideIn {
@@ -227,7 +233,7 @@ body {
 .badge-spine { background: #bf5af2; color: #fff; }
 .badge-playground { background: #c39e20; color: #fff; }
 
-#model-select-visible { display: none; }
+#model-select-visible { display: none; pointer-events: auto; }
 #model-select, #mode-select { opacity: 0; position: absolute; z-index: -1; pointer-events: none; }
 
 
@@ -239,5 +245,4 @@ body {
 }
 ::view-transition-old(root) { z-index: 1; }
 ::view-transition-new(root) { z-index: 9999; }
-
 

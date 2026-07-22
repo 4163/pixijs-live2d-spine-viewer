@@ -1,11 +1,11 @@
 // VIEWER_CONFIG — controls L2D element behavior.
 //   relativeDraw (bool): on resize, re-center + re-scale the L2D element to match the canvas.
-//   keepOriginalDimensions (bool): when scaling with canvas, never exceed original pixel size.
+//   screenFitRatio (float): maximum canvas coverage (default 0.9) before the element shrinks to fit.
 //   live2dBaseY (float): base vertical position multiplier for Live2D models (default 0.5 = center)
 //   chibiBaseY (float): base vertical position multiplier for Spine chibis (default 0.8 = near bottom)
 window.VIEWER_CONFIG = {
   relativeDraw: true,
-  keepOriginalDimensions: false,
+  screenFitRatio: 0.9, // Maximum canvas coverage (e.g. 0.9 = 90% of canvas) when auto-scaling
   live2dBaseY: 0.5,
   chibiBaseY: 0.7,
   
