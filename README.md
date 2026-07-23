@@ -25,6 +25,7 @@ Implementation uses *Girls' Frontline* models (specifically M1903 Springfield), 
 ├── index.html                      # Entry point (mode tabs, PixiJS v6 compat stubs)
 ├── icon.png                        # Favicon
 ├── gfl-spinner.svg                 # Animated loading icon (toggled by main.js state callbacks)
+├── gfloading.gif					# Legacy loading spinner gif (from IOP wiki, unused)
 ├── css/
 │   ├── main.css                    # Core styles, theme, toolbar, pills, transitions
 │   └── mobile.css                  # Mobile-responsive overrides
