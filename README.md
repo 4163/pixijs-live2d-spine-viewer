@@ -23,9 +23,9 @@ Implementation uses *Girls' Frontline* models (specifically M1903 Springfield), 
 ## Project Structure
 ```text
 ├── index.html                      # Entry point (mode tabs, PixiJS v6 compat stubs)
-├── icon.png                        # Favicon
 ├── gfl-spinner.svg                 # Animated loading icon (toggled by main.js state callbacks)
-├── gfloading.gif					# Legacy loading spinner gif (from IOP wiki, unused)
+├── gfloading.gif                   # Legacy loading spinner gif (from IOP wiki, unused)
+├── icon.png                        # Favicon
 ├── css/
 │   ├── main.css                    # Core styles, theme, toolbar, pills, transitions
 │   └── mobile.css                  # Mobile-responsive overrides
@@ -40,16 +40,16 @@ Implementation uses *Girls' Frontline* models (specifically M1903 Springfield), 
 ├── lib/
 │   ├── live2d.min.js               # Cubism 2.1 SDK for Web (C2 models)
 │   ├── live2dcubismcore.min.js     # Cubism 4 SDK for Web (C3/C4 models)
-│   ├── pixi.min.js                 # PixiJS v6.5.10
 │   ├── pixi-live2d-display.min.js  # pixi-live2d-display (guansss) — dual C2+C3
-│   ├── pixi-spine.js               # Custom pixi-spine from cullus/gfSpinePiXi (Spine 2.x runtime)
 │   ├── pixi-live2d.js              # OLD v4 bridge (retained for reference, unused)
+│   ├── pixi-spine.js               # Custom pixi-spine from cullus/gfSpinePiXi (Spine 2.x runtime)
+│   ├── pixi.min.js                 # PixiJS v6.5.10
 │   └── spine2-skeleton-binary.js   # Spine 2.1.27 binary parser (from cullus/gfSpinePiXi)
 ├── models/
 │   ├── cubism2/                    # Cubism 2 model dirs + manifest
 │   ├── cubism3/                    # Cubism 3 model dirs (m1903_5, m1903_1107) + manifest
 │   └── spine/                      # Spine chibi model dirs + manifest
-└── README.md						# Currently being viewed
+└── README.md                       # Currently being viewed
 ```
 
 > **Demo content:** Bundled with Girls' Frontline Springfield (M1903) assets as a reference implementation. Swap or add in your own models by editing the manifest files under `models/`.
