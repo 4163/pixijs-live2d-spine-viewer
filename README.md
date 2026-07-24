@@ -40,10 +40,10 @@ Implementation uses *Girls' Frontline* models (specifically M1903 Springfield), 
 ├── lib/
 │   ├── live2d.min.js               # Cubism 2.1 SDK for Web (C2 models)
 │   ├── live2dcubismcore.min.js     # Cubism 4 SDK for Web (C3/C4 models)
-│   ├── pixi-live2d-display.min.js  # pixi-live2d-display (guansss) — dual C2+C3
-│   ├── pixi-live2d.js              # OLD v4 bridge (retained for reference, unused)
-│   ├── pixi-spine.js               # Custom pixi-spine from cullus/gfSpinePiXi (Spine 2.x runtime)
 │   ├── pixi.min.js                 # PixiJS v6.5.10
+│   ├── pixi-live2d-display.min.js  # pixi-live2d-display (guansss) — dual C2+C3
+│   ├── pixi-spine.js               # Custom pixi-spine from cullus/gfSpinePiXi (Spine 2.x runtime)
+│   ├── pixi-live2d.js              # OLD v4 bridge (retained for reference, unused)
 │   └── spine2-skeleton-binary.js   # Spine 2.1.27 binary parser (from cullus/gfSpinePiXi)
 ├── models/
 │   ├── cubism2/                    # Cubism 2 model dirs + manifest
