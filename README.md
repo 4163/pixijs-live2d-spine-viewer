@@ -46,7 +46,8 @@ Implementation uses *Girls' Frontline* models (specifically M1903 Springfield), 
 │   │   ├── gif.js                  # GIF encoder
 │   │   ├── gif.worker.js           # GIF worker
 │   │   ├── pako.min.js             # DEFLATE compression
-│   │   └── UPNG.js                 # APNG encoder
+│   │   ├── UPNG.js                 # APNG encoder
+│   │   └── webp-muxer.js           # Animated WebP RIFF muxer
 │   ├── live2d.min.js               # Cubism 2.1 SDK for Web (C2 models)
 │   ├── live2dcubismcore.min.js     # Cubism 4 SDK for Web (C3/C4 models)
 │   ├── pixi.min.js                 # PixiJS v6.5.10
@@ -301,7 +302,7 @@ An experimental mode demonstrating how to manage multiple Spine instances simult
 
 ### Animation Exporter (`js/exporter.js`)
 An advanced, browser-compatible frame-by-frame animation encoder supporting APNG, Animated WebP, GIF, and PNG formats.
-- **Multiple Formats**: APNG (default) via `UPNG.js` (full alpha), Animated WebP via native browser VP8L encoding and custom inline RIFF muxer (full alpha), GIF via `gif.js` (chroma-key fallback), and single-frame PNG snapshots (perfect for high-res poses). Dependencies are lazy-loaded only when requested.
+- **Multiple Formats**: APNG (default) via `UPNG.js` (full alpha), Animated WebP via native browser VP8L encoding and custom decoupled RIFF muxer (`webp-muxer.js`, full alpha), GIF via `gif.js` (chroma-key fallback), and single-frame PNG snapshots. Dependencies are lazy-loaded only when requested.
 - **Perfect Loop Auto-Detection**: Dynamically scans Spine skeletons and Live2D `motionGroups` (Cubism 2, 3, & 4) to calculate the precise floating-point length of an animation, guaranteeing seamlessly looping animations without manual duration guessing.
 - **Stable Framing & Configuration**: Integrates directly with `VIEWER_CONFIG.layout` offsets (`offsetX`/`offsetY`). If a model is visually shifted in the viewport to compensate for strange logical PSD bounds, the exporter mathematically translates those exact offsets to perfectly frame the output. Includes a `scale` option for supersampled rendering.
 - **State Preservation**: Suspends the main `PIXI.Ticker` while safely capturing frames via `app.renderer.render()`, forcibly disabling Live2D mouse-tracking so the character looks straight ahead, and perfectly restores both the tracker and the previously playing Spine animations once complete.
