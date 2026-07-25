@@ -290,6 +290,13 @@ An experimental mode demonstrating how to manage multiple Spine instances simult
 - **Dynamic Anchoring**: Uses `spine.getLocalBounds()` to correctly position generated sprites relative to the varying physical dimensions of different skeletons.
 - **Touch & Desktop Parity**: Native detection of touch screens. Maps Right-Click to Duplicate and Double-Right-Click to Delete on desktop, gracefully adapting to Double-Tap (Duplicate) and Triple-Tap (Delete) on mobile/touch interfaces.
 
+### GIF Exporter (`js/export-gif.js`)
+An advanced, browser-compatible frame-by-frame GIF encoder leveraging `gif.js`.
+- **Perfect Loop Auto-Detection**: Dynamically scans Spine skeletons and Live2D `motionGroups` (Cubism 2, 3, & 4) to calculate the precise floating-point length of an animation, guaranteeing seamlessly looping GIFs without manual duration guessing.
+- **Stable Framing & Configuration**: Integrates directly with `VIEWER_CONFIG.layout` offsets (`offsetX`/`offsetY`). If a model is visually shifted in the viewport to compensate for strange logical PSD bounds, the exporter mathematically translates those exact offsets to perfectly frame the output GIF.
+- **State Preservation**: Suspends the main `PIXI.Ticker` while safely capturing frames via `app.renderer.render()`, forcibly disabling Live2D mouse-tracking so the character looks straight ahead, and perfectly restores both the tracker and the previously playing Spine animations once complete.
+- **Transparent Output**: Re-maps WebGL pre-multiplied alpha values and forces empty pixels to a pure magenta chroma-key internally, achieving 1-bit transparency standard to the `.gif` format.
+
 ## Playwright Tests
 
 Test scripts live in `playwright/` and require Playwright:
