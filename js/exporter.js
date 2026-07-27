@@ -15,6 +15,21 @@
      exportModel({ padding: 0.2 })                    // 20% canvas padding (default 0.2)
    ============================================================ */
 
+console.log(`
+Usage (DevTools console):
+
+  exportModel()                                    // APNG (default), current animation, auto-duration
+  exportModel({ format: 'webp' })                  // Animated WebP (lossless, full alpha)
+  exportModel({ format: 'gif' })                   // GIF (1-bit alpha via chroma-key)
+  exportModel({ format: 'png' })                   // PNG snapshot (current frame, ignores duration/motion)
+  exportModel({ motion: 'move' })                  // Specific Spine animation
+  exportModel({ duration: 4000 })                  // Override duration (ms)
+  exportModel({ scale: 2.0 })                      // 2× supersampling resolution
+  exportModel({ maxSize: 1024 })                   // Cap output size (default: 2048)
+  exportModel({ fps: 20 })                         // Lower FPS = smaller file
+  exportModel({ padding: 0.2 })                    // 20% canvas padding (default: 0.2)
+`);
+
 (function () {
   'use strict';
 
