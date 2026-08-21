@@ -1,8 +1,7 @@
-.agents/
+# Note: session-index.md and other .agents/ files are strictly local and intentionally ignored
+.agents/session-index.md
 
 Makefile
-pipeline.instructions.md
-push-pipeline.py
 
 playwright/*
 !playwright/*.mjs
