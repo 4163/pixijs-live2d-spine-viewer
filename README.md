@@ -7,7 +7,7 @@
 ## Overview
 A standalone WebGL renderer built on PixiJS that displays Live2D (Cubism 2 and 3) and Spine 2.x skeletal animations.
 
-The bundled models are from *Girls' Frontline* (M1903 Springfield), but models from other sources are also supported. Rendering runs through `app.js` and `chibi.js` against the core libraries in `lib/`. All DOM work lives in `main.js`, which talks to the renderers via state callbacks. The viewer can also be embedded in other projects or extended with new features with minimal changes.
+The bundled models are from *Girls' Frontline* (M1903 Springfield), but models from other sources are also supported. Rendering runs through `app.js` and `chibi.js` against the core libraries in `lib/`. All DOM work lives in `main.js`, which talks to the renderers via state callbacks. The viewer can be embedded in other projects or extended with new features with minimal changes.
 
 ## Stack
 
