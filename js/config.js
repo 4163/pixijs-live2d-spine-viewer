@@ -1,4 +1,4 @@
-// VIEWER_CONFIG — controls L2D element behavior.
+// VIEWER_CONFIG controls L2D element behavior.
 //   relativeDraw (bool): on resize, re-center + re-scale the L2D element to match the canvas.
 //   screenFitRatio (float): maximum canvas coverage (default 0.9) before the element shrinks to fit.
 //   live2dBaseY (float): base vertical position multiplier for Live2D models (default 0.5 = center)

@@ -1,4 +1,4 @@
-// Playwright debug script — track model asset caching
+// Playwright debug script: track model asset caching
 // Usage:
 //   1. Start server: npx live-server ../ --port=8000 --no-browser
 //   2. Run: node playwright/debug-cache.mjs
@@ -51,7 +51,7 @@ async function run() {
   // Find pills and click second one
   const pills = await page.$$('.model-pill');
   if (pills.length < 2) {
-    console.log('ONLY', pills.length, 'PILLS — cannot test switching');
+    console.log('ONLY', pills.length, 'PILLS, cannot test switching');
   } else {
     const pill2id = await pills[1].getAttribute('data-id');
     console.log('\n=== CLICKING PILL:', pill2id, '===');

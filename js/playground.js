@@ -1,20 +1,14 @@
-/* ============================================================
-   playground.js — Example: render all Spine models side-by-side
-   ============================================================
-   This file demonstrates how a developer can use the raw
-   Spine 2.x + PixiJS API (the same stack that chibi.js uses)
-   to build a custom multi-model scene — without touching the
-   core chibi.js viewer logic.
-
-   Dependencies (must already be loaded):
-     - pixi.min.js
-     - pixi-spine.js (PIXI.spine.SpineRuntime)
-     - spine2-skeleton-binary.js (SkeletonBinary)
-
-   Exposes:
-     window.initPlaygroundMode(app, models)
-     window.destroyPlayground()
-   ============================================================ */
+// playground.js: example, render all Spine models side-by-side.
+// Demonstrates building a custom multi-model scene with the raw
+// Spine 2.x + PixiJS API (the same stack chibi.js uses),
+// without touching the core chibi.js viewer logic.
+//
+// Dependencies (must already be loaded):
+//   pixi.min.js
+//   pixi-spine.js (PIXI.spine.SpineRuntime)
+//   spine2-skeleton-binary.js (SkeletonBinary)
+//
+// Exposes window.initPlaygroundMode(app, models) and window.destroyPlayground().
 
 (function () {
   'use strict';
@@ -94,7 +88,7 @@
         })
       ]);
     } catch (e) {
-      console.warn(`[Playground] ${entry.name}: failed to load -`, e.message || e);
+      console.warn(`[Playground] ${entry.name}: failed to load`, e.message || e);
       return null;
     }
 
@@ -346,7 +340,7 @@
 
       return spine;
     } catch (e) {
-      console.warn(`[Playground] ${entry.name}: parse error -`, e.message || e);
+      console.warn(`[Playground] ${entry.name}: parse error`, e.message || e);
       return null;
     }
   }

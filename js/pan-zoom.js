@@ -1,13 +1,6 @@
-/* ============================================================
-   panzoom.js — Pan & Zoom controller for a PIXI Application
-   ============================================================
-   Usage:
-     const panZoom = window.initPanZoom(app);
-     panZoom.enable();
-
-   Returns a controller object:
-     { enable, disable, toggle, isActive, reset, suspend, resume }
-   ============================================================ */
+// pan-zoom.js: pan & zoom controller for a PIXI Application.
+// Usage: const panZoom = window.initPanZoom(app); panZoom.enable();
+// Returns { enable, disable, toggle, isActive, reset, suspend, resume }.
 
 (function () {
   'use strict';
@@ -40,7 +33,7 @@
       app.stage.position.y = Math.max(minY, Math.min(app.stage.position.y, maxY));
     }
 
-    // ── Pointer drag & Pinch zoom ──
+    // Pointer drag & Pinch zoom
     app.view.addEventListener('pointerdown', e => {
       if (!isPanMode || isSuspended) return;
       activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -123,7 +116,7 @@
     window.addEventListener('pointerup', removePointer);
     window.addEventListener('pointercancel', removePointer);
 
-    // ── Wheel zoom ──
+    // Wheel zoom
     app.view.addEventListener('wheel', e => {
       if (!isPanMode || isSuspended) return;
       e.preventDefault();

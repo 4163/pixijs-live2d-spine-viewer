@@ -1,14 +1,10 @@
-/**
- * cache.js — Model Asset Cache
- * 
- * Provides an in-memory cache for Live2D and Spine assets to prevent 
- * redundant network requests when switching between previously loaded models.
- * Patches PIXI.live2d.XHRLoader and window.fetch globally.
- */
+// cache.js: model asset cache.
+// In-memory cache for Live2D and Spine assets to prevent redundant network
+// requests when switching between previously loaded models.
+// Patches PIXI.live2d.XHRLoader and window.fetch.
 (function () {
   'use strict';
 
-  // ── Model asset cache (in-memory, per session) ────────────
   var cache = Object.create(null);
   window.__MODEL_CACHE = cache;
 

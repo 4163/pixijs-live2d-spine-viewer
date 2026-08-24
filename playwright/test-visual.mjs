@@ -40,7 +40,7 @@ async function run() {
 
   try {
     // =============================================
-    // A. Each L2D model — switch & interact
+    // A. Each L2D model: switch & interact
     // =============================================
     console.log('\n=== A. L2D models ===');
     await page.goto('http://localhost:8000/', { waitUntil: 'networkidle', timeout: 15000 });
@@ -66,7 +66,7 @@ async function run() {
     }
 
     // =============================================
-    // B. Chibi — each animation state
+    // B. Chibi: each animation state
     // =============================================
     console.log('\n=== B. Chibi animation states ===');
     await page.selectOption('#mode-select', 'chibi');
@@ -85,7 +85,7 @@ async function run() {
     }
 
     // =============================================
-    // C. Switch back to L2D — no interaction
+    // C. Switch back to L2D, no interaction
     // =============================================
     console.log('\n=== C. Switch back to L2D (no interact) ===');
     await page.selectOption('#mode-select', 'live2d');
@@ -94,7 +94,7 @@ async function run() {
     await snap('l2d_switchback');
 
     // =============================================
-    // D. Switch to Chibi — no interaction
+    // D. Switch to Chibi, no interaction
     // =============================================
     console.log('\n=== D. Switch to Chibi (no interact) ===');
     await page.selectOption('#mode-select', 'chibi');

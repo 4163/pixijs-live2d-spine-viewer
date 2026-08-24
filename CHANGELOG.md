@@ -1,6 +1,6 @@
 # Development History
 
-Legacy development checklist — all items completed.
+Legacy development checklist, all items completed.
 
 - [✓] Strip non-Springfield models
 - [✓] Download all available C2 variants from IOP Wiki

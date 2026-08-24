@@ -238,7 +238,7 @@ body {
 #model-select, #mode-select { opacity: 0; position: absolute; z-index: -1; pointer-events: none; }
 
 
-/* Radial Theme Transition Overrides */
+/* Radial theme transition overrides */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;

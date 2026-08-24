@@ -1,14 +1,11 @@
-/* ============================================================
-   chibi.js ΓÇö Spine 2.x Skeletal Animation Viewer
-   ============================================================
-   Pipeline:
-     1. Fetch atlas.txt (text), skeleton.skel (binary), spritemap.png
-     2. spine2-skeleton-binary.js (SkeletonBinary) converts .skel ΓåÆ JSON
-        Γå│ pixi-spine v3 binary parser rejects Spine 2.1.27; shim is required
-     3. pixi-spine.js SpineRuntime.Atlas parses the atlas text
-     4. pixi-spine.js SpineRuntime.SkeletonJsonParser reads the JSON
-     5. new PIXI.spine.Spine(skeletonData) renders on stage
-   ============================================================ */
+// chibi.js: Spine 2.x skeletal animation viewer.
+// Pipeline:
+//   1. Fetch atlas.txt (text), skeleton.skel (binary), spritemap.png
+//   2. spine2-skeleton-binary.js (SkeletonBinary) converts .skel to JSON;
+//      the pixi-spine v3 binary parser rejects Spine 2.1.27, so the shim is required
+//   3. pixi-spine.js SpineRuntime.Atlas parses the atlas text
+//   4. pixi-spine.js SpineRuntime.SkeletonJsonParser reads the JSON
+//   5. new PIXI.spine.Spine(skeletonData) renders on stage
 
 (function () {
   'use strict';
@@ -151,7 +148,7 @@
         ]);
       }
     } catch (e) {
-      console.warn(`${entry.name}: failed to load model files ΓÇö`, e.message || e);
+      console.warn(`${entry.name}: failed to load model files`, e.message || e);
       if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
         window.__viewerCallbacks.onStateChange({ type: 'error', modelName: entry.name });
       return;
@@ -162,13 +159,13 @@
 
     let skeletonJson, atlas, skeletonData, spine;
     try {
-      // Step 1: Spine 2.1.27 binary ΓåÆ JSON via custom shim
+      // Step 1: Spine 2.1.27 binary to JSON via custom shim
       const skelBin = new SkeletonBinary();
       skelBin.data = new Uint8Array(skelBuffer);
       skelBin.initJson();
       skeletonJson = stripDel(skelBin.json);
 
-      // Step 2: Build atlas (single spritemap page) ΓÇö strip DEL chars from region names
+      // Step 2: Build atlas (single spritemap page), strip DEL chars from region names
       const baseTex = new PIXI.BaseTexture(img);
       atlas = await new Promise(resolve => {
         new PIXI.spine.SpineRuntime.Atlas(atlasText.replace(/^\u007f/gm, ''), (_line, cb) => cb(baseTex), resolve);
@@ -192,7 +189,7 @@
       const jsonParser   = new PIXI.spine.SpineRuntime.SkeletonJsonParser(atlasParser);
       skeletonData = jsonParser.readSkeletonData(skeletonJson, dir.split('/').pop());
     } catch (e) {
-      console.warn(`${entry.name}: parse/atlas error ΓÇö`, e.message || e);
+      console.warn(`${entry.name}: parse/atlas error`, e.message || e);
       if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) window.__viewerCallbacks.onStateChange({ type: 'error', modelName: entry.name });
       return;
     }
@@ -224,7 +221,7 @@
       spine.interactive = true;
       app.stage.addChild(spine);
     } catch (e) {
-      console.warn(`${entry.name}: spine creation error —`, e.message || e);
+      console.warn(`${entry.name}: spine creation error`, e.message || e);
       if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) window.__viewerCallbacks.onStateChange({ type: 'error', modelName: entry.name });
       return;
     }
@@ -257,7 +254,7 @@
       spine.skeleton.setToSetupPose();
 
       if (loop && cfg && cfg.followUp) {
-        // Sequence loop: A (once) ΓåÆ B (once) ΓåÆ A (once) ΓåÆ B (once) ...
+        // Sequence loop: A (once) -> B (once) -> A (once) -> B (once) ...
         spine.state.setAnimationByName(0, name, false);
         spine.state.addAnimationByName(0, cfg.followUp, false, 0);
         let lastQueued = cfg.followUp;

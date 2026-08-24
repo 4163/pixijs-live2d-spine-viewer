@@ -1,15 +1,12 @@
-/**
- * canvas-resize.js
- * Generic canvas resize handler for PixiJS applications.
- * 
- * Uses ResizeObserver to resize the WebGL renderer without causing blank-frame
- * flickers, which can happen with PIXI's built-in `resizeTo`.
- * 
- * @param {PIXI.Application} app - The PIXI application instance.
- * @param {HTMLElement} containerElement - The DOM element to observe for resize.
- * @param {Array<Function>} onResizeCallbacks - Optional array of functions to call after resize but before render.
- * @returns {ResizeObserver} - The created observer instance.
- */
+// resize.js: generic canvas resize handler for PixiJS apps.
+// Uses ResizeObserver instead of PIXI's built-in `resizeTo`, which avoids
+// blank-frame flickers on renderer resize.
+//
+// initCanvasResize(app, containerElement, onResizeCallbacks)
+//   app:                PIXI.Application instance
+//   containerElement:   DOM element to observe for resizes
+//   onResizeCallbacks:  optional functions run after resize, before next render
+// Returns the ResizeObserver instance.
 (function () {
   'use strict';
 

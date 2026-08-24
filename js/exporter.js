@@ -1,19 +1,17 @@
-/* ============================================================
-   exporter.js — Multi-format animation exporter (APNG, WebP, GIF)
-   Exposes window.exportModel(options) for devtools usage.
-
-   Usage (devtools console):
-     exportModel()                                    // APNG (default), current anim, auto-duration
-     exportModel({ format: 'webp' })                  // Animated WebP (lossless, full alpha)
-     exportModel({ format: 'gif' })                   // GIF (1-bit alpha via chroma-key)
-     exportModel({ format: 'png' })                   // PNG snapshot (current frame, ignores duration/motion)
-     exportModel({ motion: 'move' })                  // specific spine anim
-     exportModel({ duration: 4000 })                  // override duration (ms)
-     exportModel({ scale: 2.0 })                      // 2x supersampling resolution
-     exportModel({ maxSize: 1024 })                   // cap output size (default 2048)
-     exportModel({ fps: 20 })                         // lower fps = smaller file
-     exportModel({ padding: 0.2 })                    // 20% canvas padding (default 0.2)
-   ============================================================ */
+// exporter.js: multi-format animation exporter (APNG, WebP, GIF).
+// Exposes window.exportModel(options) for devtools usage.
+//
+// Usage (devtools console):
+//   exportModel()                                    // APNG (default), current anim, auto-duration
+//   exportModel({ format: 'webp' })                  // Animated WebP (lossless, full alpha)
+//   exportModel({ format: 'gif' })                   // GIF (1-bit alpha via chroma-key)
+//   exportModel({ format: 'png' })                   // PNG snapshot (current frame, ignores duration/motion)
+//   exportModel({ motion: 'move' })                  // specific spine anim
+//   exportModel({ duration: 4000 })                  // override duration (ms)
+//   exportModel({ scale: 2.0 })                      // 2x supersampling resolution
+//   exportModel({ maxSize: 1024 })                   // cap output size (default 2048)
+//   exportModel({ fps: 20 })                         // lower fps = smaller file
+//   exportModel({ padding: 0.2 })                    // 20% canvas padding (default 0.2)
 
 console.log(`
 Usage (DevTools console):
@@ -33,9 +31,9 @@ Usage (DevTools console):
 (function () {
   'use strict';
 
-  // ── Lazy library loader ──────────────────────────────────────
+  // Lazy library loader
   // Dynamically injects a <script> tag and returns a promise.
-  // Libraries are loaded from local lib/exporter/ — no CDN calls.
+  // Libraries are loaded from local lib/exporter/, no CDN calls.
   function loadScript(src, globalName) {
     if (globalName && window[globalName]) return Promise.resolve();
     return new Promise((resolve, reject) => {
@@ -47,9 +45,7 @@ Usage (DevTools console):
     });
   }
 
-  // ══════════════════════════════════════════════════════════════
-  //  APNG Encoder Backend
-  // ══════════════════════════════════════════════════════════════
+  // APNG encoder backend
   async function encodeAPNG(frames, outW, outH, delayMs) {
     // UPNG.js requires pako for DEFLATE compression
     await loadScript('lib/exporter/pako.min.js', 'pako');
@@ -74,13 +70,10 @@ Usage (DevTools console):
     };
   }
 
-  // ══════════════════════════════════════════════════════════════
-  //  Animated WebP Encoder Backend (loaded lazily)
-  // ══════════════════════════════════════════════════════════════
+  // Animated WebP encoding is delegated to lib/exporter/webp-muxer.js,
+  // loaded on demand from exportModel() below.
 
-  // ══════════════════════════════════════════════════════════════
-  //  GIF Encoder Backend (existing chroma-key pipeline)
-  // ══════════════════════════════════════════════════════════════
+  // GIF encoder backend (chroma-key pipeline)
   async function encodeGIF(frames, outW, outH, delayMs) {
     await loadScript('lib/exporter/gif.js', 'GIF');
 
@@ -153,9 +146,7 @@ Usage (DevTools console):
     });
   }
 
-  // ══════════════════════════════════════════════════════════════
-  //  Main Exporter — Shared capture loop + format dispatch
-  // ══════════════════════════════════════════════════════════════
+  // Main exporter: shared capture loop + format dispatch
   window.exportModel = async function (options = {}) {
     const format = (options.format || 'apng').toLowerCase();
     if (!['apng', 'webp', 'gif', 'png'].includes(format)) {
@@ -178,7 +169,7 @@ Usage (DevTools console):
 
     console.log(`Exporting as ${format.toUpperCase()}...`);
 
-    // ── Detect current animation & duration ──────────────────────
+    // Detect current animation & duration
     let durationSeconds = (options.duration || 2000) / 1000;
     let motionName = options.motion;
 
@@ -284,7 +275,7 @@ Usage (DevTools console):
       }
     }
 
-    // ── Calculate stable bounds & apply padding ──────────────────
+    // Calculate stable bounds & apply padding
     let nativeW, nativeH;
     let originX = 0, originY = 0;
 
@@ -332,7 +323,7 @@ Usage (DevTools console):
 
     console.log(`Output ${format.toUpperCase()}: ${outW}×${outH} @ ${fps}fps, ${durationSeconds.toFixed(2)}s, ${framesCount} frames`);
 
-    // ── Prepare render target ────────────────────────────────────
+    // Prepare render target
     const renderTexture = PIXI.RenderTexture.create({ width: outW, height: outH });
 
     // For Spine: disable autoUpdate so autoUpdateTransform (which uses Date.now()) doesn't interfere
@@ -347,7 +338,7 @@ Usage (DevTools console):
     console.log(`Capturing ${framesCount} frames...`);
     const captureStart = performance.now();
 
-    // ── Frame capture loop ───────────────────────────────────────
+    // Frame capture loop
     const capturedFrames = [];
 
     for (let i = 0; i < framesCount; i++) {
@@ -408,7 +399,7 @@ Usage (DevTools console):
     const captureMs = (performance.now() - captureStart).toFixed(0);
     console.log(`Capture done (${captureMs}ms). Encoding ${format.toUpperCase()}...`);
 
-    // ── Restore animation systems ────────────────────────────────
+    // Restore animation systems
     if (isSpine) {
       if (wasSpineAutoUpdate !== undefined) model.autoUpdate = wasSpineAutoUpdate;
       // Restart the exact animation it was playing previously
@@ -432,7 +423,7 @@ Usage (DevTools console):
     // Safety net: force a render tick to ensure the screen repaints
     requestAnimationFrame(() => app.renderer.render(app.stage));
 
-    // ── Encode to requested format ───────────────────────────────
+    // Encode to requested format
     let result;
     if (format === 'png') {
       console.log('Encoding PNG...');

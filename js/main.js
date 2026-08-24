@@ -1,13 +1,11 @@
-/* ============================================================
-   main.js - Live2D Viewer
-   PIXI init, manifest loading, mode switching, theme toggle,
-   model pill / dropdown UI, canvas resize via PIXI resizeTo
-   ============================================================ */
+// main.js: viewer UI orchestration.
+// PIXI init, manifest loading, mode switching, theme toggle,
+// pill/dropdown UI, wiring for pan-zoom and canvas resize.
 
 (function () {
   'use strict';
 
-  // ── Theme ─────────────────────────────────────────────────
+  // Theme
   const THEME_KEY = 'live2d-viewer-theme';
 
   function getSystemTheme() {
@@ -69,7 +67,7 @@
     document.body.appendChild(warn);
   }
 
-  // ── Viewer Callbacks (decouple canvas modules from DOM) ───
+  // Viewer Callbacks (decouple canvas modules from DOM)
   window.__viewerCallbacks = {
     onStateChange: function(state) {
       const info = document.getElementById('info');
@@ -83,17 +81,17 @@
             : (state.message || 'Loading…');
           break;
         case 'error':
-          html = state.message || `${state.modelName || 'Model'} — load failed`;
+          html = state.message || `${state.modelName || 'Model'}: load failed`;
           break;
         case 'ready':
           if (state.mode === 'live2d') {
-            html = `${state.modelName} — ${isTouch ? 'tap' : 'click'} to interact`;
+            html = `${state.modelName}, ${isTouch ? 'tap' : 'click'} to interact`;
           } else if (state.mode === 'spine') {
-            html = `${state.modelName} — ${isTouch ? 'tap' : 'click'} to cycle animation (${state.defaultAnim || 'none'})`;
+            html = `${state.modelName}, ${isTouch ? 'tap' : 'click'} to cycle animation (${state.defaultAnim || 'none'})`;
           }
           break;
         case 'anim-cycle':
-          html = `${state.modelName} — ${state.animName}`;
+          html = `${state.modelName}: ${state.animName}`;
           break;
         case 'playground-empty':
           html = 'Playground: no Spine models found.';
@@ -127,7 +125,7 @@
     }
   };
 
-  // ── PIXI Application ──────────────────────────────────────
+  // PIXI Application
   const canvasWrap = document.getElementById('canvas-wrap');
   const sharedApp = new PIXI.Application({
     backgroundAlpha: 0,             // Transparent to show CSS floor gradient
@@ -151,9 +149,9 @@
   console.log('Renderer:', sharedApp.renderer.type === PIXI.RENDERER_TYPE.WEBGL ? 'WebGL' : 'Canvas (WebGL unavailable)');
 
 
-  // ── Pan & Zoom - delegated to panzoom.js ─────────────────
+  // Pan & zoom is delegated to pan-zoom.js (initialized below).
 
-  // ── Canvas Resize - delegated to resize.js ─────────────────
+  // Canvas resize is delegated to resize.js.
   if (typeof window.initCanvasResize === 'function') {
     window.initCanvasResize(sharedApp, canvasWrap, [
       () => { if (typeof window.repositionLive2D === 'function') window.repositionLive2D(); },
@@ -174,7 +172,7 @@
     }
   });
 
-  // ── Pan & Zoom init ──────────────────────────────────────
+  // Pan & Zoom init
   if (typeof window.initPanZoom === 'function') {
     const pz = window.initPanZoom(sharedApp);
     window.panZoomController = pz;
@@ -216,7 +214,7 @@
   }
 
 
-  // ── Dorm toggle wiring ────────────────────────────────────
+  // Dorm toggle wiring
   const dormToggle = document.getElementById('dorm-toggle');
   if (dormToggle) {
     dormToggle.addEventListener('click', () => {
@@ -257,7 +255,7 @@
     return { live2dModels, spineModels };
   }
 
-  // ── UI: Pills + Dropdown ──────────────────────────────────
+  // UI: Pills + Dropdown
   let allLive2d = [], allSpine = [];
   let currentMode = null;
   let activePillId = null;
@@ -358,7 +356,7 @@
     });
   }
 
-  // ── Mode Switching ────────────────────────────────────────
+  // Mode Switching
   function destroyCurrent() {
     if (currentMode === 'live2d' && typeof window.destroyLive2D === 'function') window.destroyLive2D();
     if (currentMode === 'spine'  && typeof window.destroyChibi  === 'function') window.destroyChibi();
@@ -490,7 +488,7 @@
     }
   }
 
-  // ── Boot ──────────────────────────────────────────────────
+  // Boot
   (async () => {
     const { live2dModels, spineModels } = await buildModelLists();
     allLive2d = live2dModels;

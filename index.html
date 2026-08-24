@@ -17,7 +17,7 @@
 </head>
 <body>
 
-  <!-- Canvas container — PIXI.Application resizeTo targets this element -->
+  <!-- Canvas container; sized via ResizeObserver in js/main.js -->
   <div id="canvas-wrap"></div>
   
   <div id="loading-spinner" aria-hidden="true" style="display: none;">
@@ -54,7 +54,7 @@
     <!-- Mobile: visible dropdown (shown via CSS at max-width 767px) -->
     <select id="model-select-visible" aria-label="Select model"></select>
 
-    <!-- Hidden selects — kept for test-visual.mjs / verify.mjs compatibility -->
+    <!-- Hidden selects, kept for test-visual.mjs / verify.mjs compatibility -->
     <select id="model-select" aria-label="Hidden model select (tests only)"></select>
     <select id="mode-select"  aria-label="Hidden mode select (tests only)">
       <option value="live2d">live2d</option>
@@ -62,15 +62,12 @@
     </select>
   </nav>
 
-  <!-- ═══════════════════════════════════════════
-       Third-party libraries (synchronous globals)
-       Must load in order — cannot be deferred.
-       ═══════════════════════════════════════════ -->
+  <!-- Third-party libraries (synchronous globals), must load in order -->
 
-  <!-- Cubism 2 SDK — exposes window.Live2D -->
+  <!-- Cubism 2 SDK, exposes window.Live2D -->
   <script src="lib/live2d.min.js"></script>
 
-  <!-- Cubism 4 SDK — exposes window.Live2DCubismCore (for Cubism 3 models) -->
+  <!-- Cubism 4 SDK, exposes window.Live2DCubismCore (for Cubism 3 models) -->
   <script src="lib/live2dcubismcore.min.js"></script>
 
   <!-- PixiJS v6 -->
@@ -81,7 +78,7 @@
     window.process = window.process || { env: { NODE_ENV: 'production' }, browser: true, version: '' };
   </script>
 
-  <!-- pixi-live2d-display v0.5.0-beta — dual Cubism 2 + 3 support -->
+  <!-- pixi-live2d-display v0.5.0-beta, dual Cubism 2 + 3 support -->
   <script src="lib/pixi-live2d-display.min.js"></script>
 
   <!--
@@ -106,16 +103,13 @@
     }
   </script>
 
-  <!-- pixi-spine (v4 build) — exposes PIXI.spine.SpineRuntime for Spine 2.x -->
+  <!-- pixi-spine (v4 build), exposes PIXI.spine.SpineRuntime for Spine 2.x -->
   <script src="lib/pixi-spine.js"></script>
 
-  <!-- Spine 2.1.27 binary parser — converts .skel binary → JSON for pixi-spine -->
+  <!-- Spine 2.1.27 binary parser, converts .skel binary to JSON for pixi-spine -->
   <script src="lib/spine2-skeleton-binary.js"></script>
 
-  <!-- ═══════════════════════════════
-       App scripts (deferred)
-       Depend only on the globals above.
-       ═══════════════════════════════ -->
+  <!-- App scripts (deferred), depend only on the globals above -->
 
   <!-- Model asset cache intercepts XHRLoader and fetch -->
   <script src="js/cache.js" defer></script>
@@ -135,7 +129,7 @@
   <!-- Resize handler -->
   <script src="js/resize.js" defer></script>
 
-  <!-- Pan & Zoom module — pointer drag + scroll-to-zoom on the PIXI canvas -->
+  <!-- Pan & Zoom module, pointer drag + scroll-to-zoom on the PIXI canvas -->
   <script src="js/pan-zoom.js" defer></script>
 
   <!-- PIXI init, mode switching, theme toggle, UI wiring -->

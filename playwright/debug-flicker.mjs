@@ -19,8 +19,8 @@ async function run() {
   await new Promise(r => setTimeout(r, 5000));
   console.log('Initial:', await page.evaluate(() => document.getElementById('info').textContent));
 
-  // Capture frames — manually resize the window for ~6 seconds
-  console.log('\nCapturing frames for 6 seconds — manually resize the window now!');
+  // Capture frames; manually resize the window for ~6 seconds
+  console.log('\nCapturing frames for 6 seconds, manually resize the window now!');
   const count = 360;
   for (let i = 0; i < count; i++) {
     const path = `screenshots/frame-${String(i).padStart(4, '0')}.png`;

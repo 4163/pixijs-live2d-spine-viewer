@@ -1,10 +1,5 @@
-/* ============================================================
-   app.js — Live2D (Cubism 2 + 3) Viewer
-   Uses pixi-live2d-display (guansss) for both C2 and C3.
-   
-   Terminology:
-     "L2D element" — the Live2D model (PIXI display object) drawn on canvas.
-   ============================================================ */
+// app.js: Live2D (Cubism 2 + 3) viewer, via pixi-live2d-display (guansss).
+// "L2D element": the Live2D model (PIXI display object) drawn on canvas.
 
 (function () {
   'use strict';
@@ -64,7 +59,7 @@
     try {
       model = await PIXI.live2d.Live2DModel.from(entry.json, { autoHitTest: false, autoFocus: false });
     } catch (e) {
-      console.warn(`${entry.name}: Live2D model load failed —`, e.message || e);
+      console.warn(`${entry.name}: Live2D model load failed`, e.message || e);
       if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
         window.__viewerCallbacks.onStateChange({ type: 'error', modelName: entry.name });
       return;
@@ -117,7 +112,7 @@
         else if (hitAreas.includes('arm'))  model.motion('tap_arm');
         else                                model.motion('idle');
       } catch (e) {
-        console.warn(`${entry.name}: motion error —`, e.message || e);
+        console.warn(`${entry.name}: motion error`, e.message || e);
       }
     });
   }
