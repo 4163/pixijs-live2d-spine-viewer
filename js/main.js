@@ -85,9 +85,9 @@
           break;
         case 'ready':
           if (state.mode === 'live2d') {
-            html = `${state.modelName}, ${isTouch ? 'tap' : 'click'} to interact`;
+            html = `${state.modelName}: ${isTouch ? 'tap' : 'click'} to interact`;
           } else if (state.mode === 'spine') {
-            html = `${state.modelName}, ${isTouch ? 'tap' : 'click'} to cycle animation (${state.defaultAnim || 'none'})`;
+            html = `${state.modelName}: ${isTouch ? 'tap' : 'click'} to cycle animation (${state.defaultAnim || 'none'})`;
           }
           break;
         case 'anim-cycle':
