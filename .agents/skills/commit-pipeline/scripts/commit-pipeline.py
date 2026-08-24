@@ -33,11 +33,13 @@ def apply_submodule_sparse_checkout(config):
     for section, patterns in config.items():
         if section in ("netlify:/", "remote:/"):
             continue
-            
-        if os.path.isdir(os.path.join(section, '.git')):
+
+        if os.path.exists(os.path.join(section, '.git')):
             print(f"=== Applying sparse-checkout exclusions to {section} ===")
             subprocess.run(["git", "sparse-checkout", "init", "--no-cone"], cwd=section, check=True)
-            subprocess.run(["git", "sparse-checkout", "set", "--stdin"], cwd=section, input='\n'.join(patterns).encode('utf-8'), check=True)
+            # /* = include all, !/ = exclude (inverted .gitignore semantics) - sparse-checkout requires negation
+            sparse_patterns = ["/*"] + [f"!/{p.lstrip('/')}" for p in patterns]
+            subprocess.run(["git", "sparse-checkout", "set", "--stdin"], cwd=section, input="\n".join(sparse_patterns).encode('utf-8'), check=True)
 
 def download_remote_files(config):
     lines = []

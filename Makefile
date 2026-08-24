@@ -18,10 +18,10 @@
 #   Git reads global config from that HOME, not from Windows home.
 #   Without these configured there, you'll get "dubious ownership" and
 #   "Author identity unknown" (falls back to user@hostname.(none)):
-#     git config --global --add safe.directory E:/Projects/x4163-apps
-#     git config --global user.name "4163"
-#     git config --global user.email "x4163x@gmail.com"
-#   (Run with HOME=C:\tools\msys64\home\x4163 to configure for MSYS2.)
+#     git config --global --add safe.directory <path/to/repo>
+#     git config --global user.name "Your Name"
+#     git config --global user.email "you@example.com"
+#   (Run with HOME=C:\tools\msys64\home\<user> to configure for MSYS2.)
 
 .PHONY: push push-x push-a
 
