@@ -93,7 +93,8 @@ def do_push(manual=False, additional=""):
     
     if manual:
         print("=== Manual commit ===")
-        subprocess.run(["git", "commit"], check=True)
+        msg = input("Commit message: ")
+        subprocess.run(["git", "commit", "-m", msg], check=True)
         subprocess.run(["git", "push"], check=True)
         print("=== Done ===")
         return
