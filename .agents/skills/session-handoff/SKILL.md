@@ -40,7 +40,7 @@ Treat old transcript content as a lead, not proof. Verify claims against the cur
 
 After updating the index, end with a fenced code block containing exactly one concise sentence the user can paste into the next agent.
 
-Use this shape as reference, not strict:
+Use this shape as reference, not strict (spice it up and keep it varied):
 
 ```text
 Use the session-recovery skill to resume from session-index entry `<id>`, then verify the handoff against current source before continuing.
