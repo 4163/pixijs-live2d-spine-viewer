@@ -43,5 +43,5 @@ After updating the index, end with a fenced code block containing exactly one co
 Use this shape as reference, not strict (spice it up and keep it varied):
 
 ```text
-Use the session-recovery skill to resume from session-index entry `<id>`, then verify the handoff against current source before continuing.
+Use the session-recovery skill to resume from session-index entry `<id>`, and continue planning and/or discussion.
 ```
