@@ -1,23 +1,13 @@
-// exporter.js: multi-format animation exporter (APNG, WebP, GIF).
+// exporter.js: multi-format animation exporter (APNG, WebP, AVIF, GIF).
 // Exposes window.exportModel(options) for devtools usage.
-//
-// Usage (devtools console):
-//   exportModel()                                    // APNG (default), current anim, auto-duration
-//   exportModel({ format: 'webp' })                  // Animated WebP (lossless, full alpha)
-//   exportModel({ format: 'gif' })                   // GIF (1-bit alpha via chroma-key)
-//   exportModel({ format: 'png' })                   // PNG snapshot (current frame, ignores duration/motion)
-//   exportModel({ motion: 'move' })                  // specific spine anim
-//   exportModel({ duration: 4000 })                  // override duration (ms)
-//   exportModel({ scale: 2.0 })                      // 2x supersampling resolution
-//   exportModel({ maxSize: 1024 })                   // cap output size (default 2048)
-//   exportModel({ fps: 20 })                         // lower fps = smaller file
-//   exportModel({ padding: 0.2 })                    // 20% canvas padding (default 0.2)
 
 console.log(`
 Usage (DevTools console):
 
   exportModel()                                    // APNG (default), current animation, auto-duration
   exportModel({ format: 'webp' })                  // Animated WebP (lossless, full alpha)
+  exportModel({ format: 'avif' })                  // Animated AVIF (lossy, high compression, full alpha)
+  exportModel({ format: 'avis' })                  // Alias
   exportModel({ format: 'gif' })                   // GIF (1-bit alpha via chroma-key)
   exportModel({ format: 'png' })                   // PNG snapshot (current frame, ignores duration/motion)
   exportModel({ motion: 'move' })                  // Specific Spine animation
@@ -26,7 +16,7 @@ Usage (DevTools console):
   exportModel({ maxSize: 1024 })                   // Cap output size (default: 2048)
   exportModel({ fps: 20 })                         // Lower FPS = smaller file
   exportModel({ padding: 0.2 })                    // 20% canvas padding (default: 0.2)
-`);
+` );
 
 (function () {
   'use strict';
@@ -146,11 +136,267 @@ Usage (DevTools console):
     });
   }
 
+  // AVIF encoder backend (WASM libavif + custom ISOBMFF muxer)
+  // Uses @jsquash/avif WASM encoder (from Google Squoosh) to produce valid
+  // still AVIF frames, then extracts AV1 data and assembles an animated container.
+  async function encodeAVIF(frames, outW, outH, fps) {
+    await loadScript('lib/exporter/avif-encoder.js', 'encodeStillAVIF');
+    console.log('Encoding AVIF (WASM)...');
+
+    // ── ISOBMFF helpers ──
+    function u32be(v) { return [(v >>> 24) & 0xff, (v >>> 16) & 0xff, (v >>> 8) & 0xff, v & 0xff]; }
+    function u16be(v) { return [(v >>> 8) & 0xff, v & 0xff]; }
+    function asciiBytes(s) { return Array.from(s).map(c => c.charCodeAt(0)); }
+    function flatten(items) {
+      const res = [];
+      for (const item of items) {
+        if (item instanceof Uint8Array) res.push(...item);
+        else if (Array.isArray(item)) res.push(...flatten(item));
+        else res.push(item);
+      }
+      return res;
+    }
+    function makeBox(type, ...payloads) {
+      const body = flatten(payloads);
+      return new Uint8Array([...u32be(8 + body.length), ...asciiBytes(type), ...body]);
+    }
+    function makeFullBox(type, version, flags, ...payloads) {
+      return makeBox(type, version, ...u32be(flags).slice(1), ...payloads);
+    }
+
+    // Extract raw AV1 data and av1C config from a still AVIF ArrayBuffer
+    function extractAV1FromAVIF(buf) {
+      const bytes = new Uint8Array(buf);
+      const view = new DataView(buf);
+      let av1CRecords = [];
+      let ilocData = null;
+
+      for (let i = 0; i < bytes.length - 8; i++) {
+        if (bytes[i+4] === 0x61 && bytes[i+5] === 0x76 && bytes[i+6] === 0x31 && bytes[i+7] === 0x43) { // 'av1C'
+          const sz = view.getUint32(i);
+          if (sz >= 12 && sz < 100 && i + sz <= bytes.length) {
+            av1CRecords.push(bytes.slice(i + 8, i + sz));
+          }
+        }
+        if (bytes[i+4] === 0x69 && bytes[i+5] === 0x6C && bytes[i+6] === 0x6F && bytes[i+7] === 0x63) { // 'iloc'
+          const sz = view.getUint32(i);
+          ilocData = bytes.slice(i + 8, i + sz);
+        }
+      }
+
+      let colorData = null;
+      let alphaData = null;
+
+      if (ilocData) {
+        const iv = new DataView(ilocData.buffer, ilocData.byteOffset, ilocData.byteLength);
+        const version = ilocData[0];
+        let p = 4;
+        const offLen = ilocData[p]; p++;
+        const offsetSize = (offLen >> 4) & 15;
+        const lengthSize = offLen & 15;
+        const baseOffSize = (ilocData[p] >> 4) & 15; p++;
+        const itemCount = version < 2 ? iv.getUint16(p) : iv.getUint16(p); p += 2;
+
+        for (let i = 0; i < itemCount; i++) {
+          const itemId = version < 2 ? iv.getUint16(p) : iv.getUint16(p); p += 2;
+          if (version === 1 || version === 2) p++; // method
+          p += 2; // data_ref
+          p += baseOffSize;
+          const extCount = iv.getUint16(p); p += 2;
+          for (let e = 0; e < extCount; e++) {
+            const extOffset = offsetSize === 4 ? iv.getUint32(p) : iv.getUint16(p); p += offsetSize;
+            const extLen = lengthSize === 4 ? iv.getUint32(p) : iv.getUint16(p); p += lengthSize;
+            const slice = bytes.slice(extOffset, extOffset + extLen);
+            if (itemId === 1) colorData = slice;
+            if (itemId === 2) alphaData = slice;
+          }
+        }
+      }
+      return { colorData, alphaData, colorAv1C: av1CRecords[0], alphaAv1C: av1CRecords[1] };
+    }
+
+    // ── Encode each frame via WASM, extract AV1 data ──
+    const av1Frames = [];
+    const alphaFrames = [];
+    let colorConfig = null;
+    let alphaConfig = null;
+
+    for (let i = 0; i < frames.length; i++) {
+      const imgData = new ImageData(new Uint8ClampedArray(frames[i].buffer), outW, outH);
+      const avifBuf = await window.encodeStillAVIF(imgData, { quality: 63, qualityAlpha: 63, speed: 6, subsample: 3 });
+
+      const res = extractAV1FromAVIF(avifBuf);
+      if (!res.colorData) throw new Error('Could not extract AV1 data from WASM-encoded AVIF frame ' + i);
+      
+      av1Frames.push(res.colorData);
+      if (res.alphaData) alphaFrames.push(res.alphaData);
+      
+      if (!colorConfig && res.colorAv1C) colorConfig = res.colorAv1C;
+      if (!alphaConfig && res.alphaAv1C) alphaConfig = res.alphaAv1C;
+
+      if (i % 5 === 0) {
+        console.log(`  encoding: ${Math.round((i / frames.length) * 100)}%`);
+        await new Promise(r => setTimeout(r, 0));
+      }
+    }
+
+    console.log(`  encoded ${av1Frames.length} frames, building container...`);
+
+    // ── Build ISOBMFF container ──
+    const frameDur = 600; // duration per frame in timescale units
+    const timescale = fps * frameDur;
+    const totalDuration = frames.length * frameDur;
+    const hasAlpha = alphaFrames.length === frames.length;
+
+    // ftyp
+    const ftypBox = makeBox('ftyp',
+      asciiBytes('avis'), u32be(0),
+      asciiBytes('avis'), asciiBytes('avif'), asciiBytes('mif1'), asciiBytes('miaf'), asciiBytes('iso8')
+    );
+
+    // mdat: chunk 1 (all color frames), chunk 2 (all alpha frames)
+    let mdatPayloadSize = 0;
+    const colorSampleSizes = [];
+    for (const f of av1Frames) { colorSampleSizes.push(f.length); mdatPayloadSize += f.length; }
+    
+    const alphaSampleSizes = [];
+    if (hasAlpha) {
+      for (const f of alphaFrames) { alphaSampleSizes.push(f.length); mdatPayloadSize += f.length; }
+    }
+
+    const mdatBox = new Uint8Array(8 + mdatPayloadSize);
+    new DataView(mdatBox.buffer).setUint32(0, mdatBox.length);
+    mdatBox[4] = 0x6D; mdatBox[5] = 0x64; mdatBox[6] = 0x61; mdatBox[7] = 0x74;
+    
+    let mc = 8;
+    for (const f of av1Frames) { mdatBox.set(f, mc); mc += f.length; }
+    const colorChunkOffset = 8;
+    
+    let alphaChunkOffset = 0;
+    if (hasAlpha) {
+      alphaChunkOffset = mc;
+      for (const f of alphaFrames) { mdatBox.set(f, mc); mc += f.length; }
+    }
+
+    function createTrack(trackId, isAlpha, refTrackId) {
+      const sizes = isAlpha ? alphaSampleSizes : colorSampleSizes;
+      const av1C = isAlpha ? alphaConfig : colorConfig;
+      const chunkOffset = isAlpha ? alphaChunkOffset : colorChunkOffset;
+      const auxCBox = isAlpha ? makeBox('auxC', asciiBytes('urn:mpeg:mpegB:cicp:systems:auxiliary:alpha'), [0,0,0,0]) : [];
+      
+      const tkhdBox = makeFullBox('tkhd', 0, 3,
+        u32be(0), u32be(0), u32be(trackId), u32be(0), u32be(totalDuration),
+        new Array(8).fill(0), u16be(0), u16be(0), u16be(0), u16be(0),
+        [0,1,0,0,0,0].flatMap(v => u32be(v === 1 ? 0x00010000 : v)),
+        u32be(0), u32be(0), u32be(0x40000000),
+        u32be(outW << 16), u32be(outH << 16)
+      );
+
+      const trefBox = isAlpha ? makeBox('tref', makeBox('auxl', u32be(refTrackId))) : [];
+
+      const mdhdBox = makeFullBox('mdhd', 0, 0, u32be(0), u32be(0), u32be(timescale), u32be(totalDuration), u16be(0x55C4), u16be(0));
+      const hdlrBox = makeFullBox('hdlr', 0, 0, u32be(0), asciiBytes('vide'), u32be(0), u32be(0), u32be(0), 0);
+      const vmhdBox = makeFullBox('vmhd', 0, 1, u16be(0), u16be(0), u16be(0), u16be(0));
+      const dinfBox = makeBox('dinf', makeFullBox('dref', 0, 0, u32be(1), makeFullBox('url ', 0, 1)));
+      
+      const av01Entry = makeBox('av01',
+        new Array(6).fill(0), u16be(1), u16be(0), u16be(0), u32be(0), u32be(0), u32be(0),
+        u16be(outW), u16be(outH), u32be(0x00480000), u32be(0x00480000), u32be(0), u16be(1),
+        new Array(32).fill(0), u16be(0x0018), [0xFF, 0xFF],
+        makeBox('av1C', ...Array.from(av1C || [0x81,0,12,0])),
+        auxCBox
+      );
+      
+      const stsdBox = makeFullBox('stsd', 0, 0, u32be(1), av01Entry);
+      const sttsBox = makeFullBox('stts', 0, 0, u32be(1), u32be(frames.length), u32be(frameDur));
+      const stssEntries = []; for(let i=0; i<frames.length; i++) stssEntries.push(...u32be(i+1));
+      const stssBox = makeFullBox('stss', 0, 0, u32be(frames.length), stssEntries);
+      const stscBox = makeFullBox('stsc', 0, 0, u32be(1), u32be(1), u32be(frames.length), u32be(1));
+      const stszEntries = sizes.flatMap(s => u32be(s));
+      const stszBox = makeFullBox('stsz', 0, 0, u32be(0), u32be(frames.length), stszEntries);
+      
+      // We will patch the chunk offset later
+      const stcoBox = makeFullBox('stco', 0, 0, u32be(1), u32be(chunkOffset));
+
+      const stblBox = makeBox('stbl', stsdBox, sttsBox, stssBox, stscBox, stszBox, stcoBox);
+      const minfBox = makeBox('minf', vmhdBox, dinfBox, stblBox);
+      const mdiaBox = makeBox('mdia', mdhdBox, hdlrBox, minfBox);
+      return makeBox('trak', tkhdBox, trefBox, mdiaBox);
+    }
+
+    const mvhdBox = makeFullBox('mvhd', 0, 0,
+      u32be(0), u32be(0), u32be(timescale), u32be(totalDuration),
+      [0x00, 0x01, 0x00, 0x00], [0x01, 0x00], new Array(10).fill(0),
+      [0,1,0,0,0,0].flatMap(v => u32be(v === 1 ? 0x00010000 : v)),
+      u32be(0), u32be(0), u32be(0x40000000), new Array(24).fill(0), u32be(hasAlpha ? 3 : 2)
+    );
+
+    const trak1Box = createTrack(1, false, 0);
+    const trak2Box = hasAlpha ? createTrack(2, true, 1) : [];
+    const moovBox = makeBox('moov', mvhdBox, trak1Box, trak2Box);
+
+    // ── meta box (HEIF primary item for poster frame) ──
+    const metaHdlr = makeFullBox('hdlr', 0, 0, u32be(0), asciiBytes('pict'), u32be(0), u32be(0), u32be(0), 0);
+    const pitmBox = makeFullBox('pitm', 0, 0, u16be(1));
+    const ispeBox = makeFullBox('ispe', 0, 0, u32be(outW), u32be(outH));
+    const pixiBox = makeFullBox('pixi', 0, 0, 3, 8, 8, 8);
+    const av1CMetaBox = makeBox('av1C', ...Array.from(colorConfig || [0x81,0,12,0]));
+    
+    // Minimal iprp mapping for the primary item
+    const ipcoBox = makeBox('ipco', ispeBox, pixiBox, av1CMetaBox);
+    const ipmaBox = makeFullBox('ipma', 0, 0, u32be(1), u16be(1), 3, 0x01, 0x02, 0x03);
+    const iprpBox = makeBox('iprp', ipcoBox, ipmaBox);
+    const infeBox = makeFullBox('infe', 2, 0, u16be(1), u16be(0), asciiBytes('av01'), 0);
+    const iinfBox = makeFullBox('iinf', 0, 0, u16be(1), infeBox);
+    
+    // The iloc needs to point to the first frame of the color track in mdat
+    const ilocBox = makeFullBox('iloc', 0, 0,
+      0x44, 0x00, u16be(1), u16be(1), u16be(0), u16be(1), u32be(0), u32be(0)
+    );
+    const metaBox = makeFullBox('meta', 0, 0, metaHdlr, pitmBox, ilocBox, iinfBox, iprpBox);
+
+    // ── Assemble: ftyp + meta + moov + mdat ──
+    const totalSize = ftypBox.length + metaBox.length + moovBox.length + mdatBox.length;
+    const out = new Uint8Array(totalSize);
+    let p = 0;
+    out.set(ftypBox, p); p += ftypBox.length;
+    out.set(metaBox, p); const metaOff = p; p += metaBox.length;
+    out.set(moovBox, p); const moovOff = p; p += moovBox.length;
+    out.set(mdatBox, p); const mdatOff = p;
+
+    const ov = new DataView(out.buffer);
+    const mdatDataStart = mdatOff; // absolute offset to start of mdat box
+
+    // Patch stco for all tracks
+    let chunkIndex = 0;
+    for (let i = moovOff; i < moovOff + moovBox.length - 8; i++) {
+      if (ov.getUint32(i + 4) === 0x7374636F) {
+        const originalOffset = ov.getUint32(i + 16);
+        ov.setUint32(i + 16, mdatDataStart + originalOffset);
+        chunkIndex++;
+      }
+    }
+    // Patch iloc
+    for (let i = metaOff; i < metaOff + metaBox.length - 8; i++) {
+      if (ov.getUint32(i + 4) === 0x696C6F63) {
+        ov.setUint32(i + 22, mdatDataStart + 8); // point to first frame
+        ov.setUint32(i + 26, colorSampleSizes[0]);
+        break;
+      }
+    }
+
+    return {
+      blob: new Blob([out], { type: 'image/avif' }),
+      ext: 'avif'
+    };
+  }
+
   // Main exporter: shared capture loop + format dispatch
   window.exportModel = async function (options = {}) {
-    const format = (options.format || 'apng').toLowerCase();
-    if (!['apng', 'webp', 'gif', 'png'].includes(format)) {
-      return console.error(`exportModel: Unknown format '${format}'. Use 'apng', 'webp', 'gif', or 'png'.`);
+    let format = (options.format || 'apng').toLowerCase();
+    if (format === 'avis') format = 'avif';
+    if (!['apng', 'webp', 'gif', 'png', 'avif'].includes(format)) {
+      return console.error(`exportModel: Unknown format '${format}'. Use 'apng', 'webp', 'avif', 'gif', or 'png'.`);
     }
 
     const fps = options.fps || 30;
@@ -437,6 +683,8 @@ Usage (DevTools console):
     } else if (format === 'webp') {
       await loadScript('lib/exporter/webp-muxer.js', 'encodeAnimatedWebP');
       result = await window.encodeAnimatedWebP(capturedFrames, outW, outH, delayMs);
+    } else if (format === 'avif') {
+      result = await encodeAVIF(capturedFrames, outW, outH, fps);
     } else if (format === 'apng') {
       result = await encodeAPNG(capturedFrames, outW, outH, delayMs);
     } else {

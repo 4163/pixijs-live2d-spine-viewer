@@ -22,6 +22,7 @@ The bundled models are from *Girls' Frontline* (M1903 Springfield), but models f
 | [UPNG.js](https://github.com/photopea/UPNG.js) | - | APNG encoding backend |
 | [pako](https://github.com/nodeca/pako) | 2.1.0 | DEFLATE compression (for UPNG) |
 | [gif.js](https://jnordberg.github.io/gif.js/) | 0.2.0 | GIF encoding backend |
+| [@jsquash/avif](https://github.com/jamsinclair/jSquash) | 2.1.1 | AVIF WASM encoder (still frames for Animated AVIF) |
 
 ## Project structure
 ```text
@@ -36,13 +37,16 @@ The bundled models are from *Girls' Frontline* (M1903 Springfield), but models f
 │   ├── app.js                      # Live2D viewer (initLive2DMode / destroyLive2D, repositionLive2D)
 │   ├── cache.js                    # Model asset cache (intercepts XHRLoader and window.fetch)
 │   ├── chibi.js                    # Spine chibi viewer (initChibiMode / destroyChibi, repositionChibi)
-│   ├── config.js                   # VIEWER_CONFIG (relativeDraw, keepOriginalDimensions, layout)
-│   ├── exporter.js                 # Multi-format devtools animation exporter (APNG / WebP / GIF)
+│   ├── config.js                   # VIEWER_CONFIG (relativeDraw, screenFitRatio, layout)
+│   ├── exporter.js                 # Multi-format devtools animation exporter (AVIF / APNG / WebP / GIF)
 │   ├── main.js                     # PIXI init, manifest loading, mode switching, resize, boot
 │   ├── pan-zoom.js                 # Stage-level pan & zoom controller (decoupled API)
-│   └── playground.js               # Multi-model Spine playground (scatter, drag, localStorage persistence)
+│   ├── playground.js               # Multi-model Spine playground (scatter, drag, localStorage persistence)
+│   └── resize.js                   # Canvas ResizeObserver (initCanvasResize)
 ├── lib/
 │   ├── exporter/                   # Animation encoder dependencies (lazy-loaded by exporter.js)
+│   │   ├── avif-encoder.js         # Vendored @jsquash/avif still-frame encoder
+│   │   ├── avif_enc.wasm           # libavif WASM (loaded by avif-encoder.js)
 │   │   ├── gif.js                  # GIF encoder
 │   │   ├── gif.worker.js           # GIF worker
 │   │   ├── pako.min.js             # DEFLATE compression
@@ -226,14 +230,14 @@ window.__viewerCallbacks = {
 ### Config (`js/config.js`)
 `window.VIEWER_CONFIG` controls viewer behavior:
 - `relativeDraw` (bool): if `false`, skip all repositioning (centering + scaling) on resize. If `true` (or unset), re-center and re-scale the model on canvas resize.
-- `keepOriginalDimensions` (bool): when scaling with canvas, never exceed original pixel size.
+- `screenFitRatio` (number): maximum canvas coverage when auto-scaling (default `0.9`). Scale is also clamped so the model never exceeds its original pixel size.
 - `live2dBaseY` (number): base vertical anchor multiplier for Live2D (default `0.5`, center).
-- `chibiBaseY` (number): base vertical anchor multiplier for Spine chibis (default `0.8`, near bottom).
+- `chibiBaseY` (number): base vertical anchor multiplier for Spine chibis (default `0.7`, near bottom).
 - `layout`: per-model overrides keyed by entry `id`:
   - `offsetY` (number): vertical shift multiplier relative to screen height (e.g. `-0.25` is 25% up)
   - `scale` (number): scale multiplier
 - `spineAnim`: animation config for Spine chibis with a `global` fallback or per-model keys. Supports `loop: false`, `followUp: 'anim_name'`, and `hidden: true` (hides from manual clicks).
-- Default: `{ relativeDraw: true, keepOriginalDimensions: false }`.
+- Default: `{ relativeDraw: true, screenFitRatio: 0.9, live2dBaseY: 0.5, chibiBaseY: 0.7 }`.
 
 ### Model asset cache (`js/cache.js`)
 In-memory cache map (URL → response data) that prevents re-downloading files when switching between previously loaded models. Two loading paths are intercepted:
@@ -263,7 +267,7 @@ To add a new fetch-loaded file type, extend the regex: `/(skel|atlas\.txt|new_ex
    - `model.motion(group)` for playing random motion from group
    - Handles its own WebGL state, no VAO or shader reset needed when switching models
 5. `app.js`, loads, positions, and repositions Live2D models
-   - `repositionLive2D()` early-returns if `cfg.relativeDraw === false`. Otherwise re-centers (with `layout.offsetY`) and re-scales (respecting `keepOriginalDimensions` and `_cfgScale`).
+   - `repositionLive2D()` early-returns if `cfg.relativeDraw === false`. Otherwise re-centers (with `layout.offsetY`) and re-scales using `screenFitRatio` and `_cfgScale`, clamped to original pixel size.
    - `Live2DModel.from()` called with `autoHitTest: false, autoFocus: false` for manual mouse tracking via `model.focus()` and hit events.
    - `model._cfgScale` and `model._entryId` stored on the model for repositioning.
    - `model.internalModel.localTransform` reset for C2 models to bypass `pixi-live2d-display`'s layout bug (incorrect shift with `center_x:0`).
@@ -277,7 +281,7 @@ To add a new fetch-loaded file type, extend the regex: `/(skel|atlas\.txt|new_ex
      - `PIXI.mesh.Mesh` → mapped to `PIXI.SimpleMesh` (prevents `Cannot set properties of undefined (setting '_parentID')` crashes when PIXI's rendering loop traverses a destroyed Spine object during mode switch cleanup).
 2. `spine2-skeleton-binary.js`, parses Spine 2.1.27 binary .skel → JSON
 3. `chibi.js`, pipeline: SkeletonBinary → PIXI.spine.SpineRuntime.Atlas → AtlasAttachmentParser → SkeletonJsonParser → PIXI.spine.Spine, rendered on shared app stage
-   - `repositionChibi()` early-returns if `cfg.relativeDraw === false`. Otherwise centers at `(screen.width/2, screen.height * 0.80)`.
+   - `repositionChibi()` early-returns if `cfg.relativeDraw === false`. Otherwise centers at `(screen.width/2, screen.height * chibiBaseY)` and scales with `screenFitRatio` the same way as Live2D.
    - Per-model `layout.scale` and `layout.offsetY` applied from `entryCfg`.
    - Starts on `wait` animation (looping). Click cycles through all animations in order (each loops).
 
@@ -300,8 +304,8 @@ An experimental mode that puts multiple Spine instances on a shared PIXI stage. 
 - Touch and desktop parity: right-click duplicates, double-right-click deletes. On touch, double-tap duplicates and triple-tap deletes.
 
 ### Animation exporter (`js/exporter.js`)
-A browser-side frame-by-frame animation encoder supporting APNG, Animated WebP, GIF, and PNG.
-- APNG (default) via `UPNG.js` (full alpha). Animated WebP via native browser VP8L encoding and a custom RIFF muxer (`webp-muxer.js`, full alpha). GIF via `gif.js` (chroma-key fallback). Single-frame PNG snapshots. Dependencies are lazy-loaded on first use.
+A browser-side frame-by-frame animation encoder supporting APNG, Animated WebP, Animated AVIF, GIF, and PNG.
+- APNG (default) via `UPNG.js` (full alpha). Animated WebP via native browser VP8L encoding and a custom RIFF muxer (`webp-muxer.js`, full alpha). Animated AVIF via vendored `@jsquash/avif` WASM (`avif-encoder.js` + `avif_enc.wasm`) for still frames, then an inline ISOBMFF muxer in `exporter.js`. GIF via `gif.js` (chroma-key fallback). Single-frame PNG snapshots. Dependencies are lazy-loaded on first use.
 - Auto-detects loop duration by scanning Spine skeletons and Live2D `motionGroups` (Cubism 2, 3, & 4) for the precise floating-point animation length, so exported loops are seamless without manual duration input.
 - Reads `VIEWER_CONFIG.layout` offsets (`offsetX`/`offsetY`). If a model is shifted in the viewport to compensate for odd logical PSD bounds, the exporter translates those offsets to correctly frame the output. Includes a `scale` option for supersampled rendering.
 - Suspends the main `PIXI.Ticker` while capturing frames via `app.renderer.render()`, disables Live2D mouse-tracking so the character faces forward, and restores both the tracker and the previously playing Spine animations when done.
