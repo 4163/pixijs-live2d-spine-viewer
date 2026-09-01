@@ -82,6 +82,24 @@ def read_additional_info():
     return "\n".join(lines).strip()
 
 
+def read_header():
+    return input("Enter commit header (short, e.g. 'Fix AVIF animation freeze'): ") or "Commit"
+
+
+def read_body():
+    print("Enter commit body (empty line or EOF to finish):")
+    lines = []
+    try:
+        while True:
+            line = input("> ")
+            if line.strip() == "":
+                break
+            lines.append(line)
+    except EOFError:
+        pass
+    return "\n".join(lines) or "No body provided"
+
+
 def do_push(manual=False, additional=""):
     print("=== Updating submodules ===")
     subprocess.run(["git", "submodule", "update", "--remote", "--init"], check=True)
@@ -95,7 +113,9 @@ def do_push(manual=False, additional=""):
     
     if manual:
         print("=== Manual commit ===")
-        msg = input("Commit message: ")
+        header = read_header()
+        body = read_body()
+        msg = f"{header}\n\n{body}".strip()
         subprocess.run(["git", "commit", "-m", msg], check=True)
         subprocess.run(["git", "push"], check=True)
         print("=== Done ===")
