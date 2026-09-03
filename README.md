@@ -292,7 +292,8 @@ A Dorm toggle in the mode tab row swaps in `skeleton_dorm.skel` and, when presen
 Stage-level transform with pointer drag + wheel zoom, applied directly to `app.stage`.
 - Zoom clamped 0.2x–5.0x, cursor-relative.
 - Stage position clamped to `maxBound * 2 * scale`.
-- Decoupled API (`enable`, `disable`, `suspend`, `resume`), UI wiring left to `main.js`.
+- Pan/zoom blocked while models are loading (when pan mode is active): `isLoading` guard aborts drag/pinch/wheel and shows `not-allowed` cursor via `#canvas-wrap.is-loading`; no effect when pan mode is off.
+- Decoupled API (`enable`, `disable`, `toggle`, `isActive`, `reset`, `suspend`, `resume`, `setLoading`, `isLoading`), UI wiring (including loading-state cursor) left to `main.js`.
 
 ### Multi-model playground (`js/playground.js`)
 An experimental mode that puts multiple Spine instances on a shared PIXI stage. This serves as a reference for how to build new features on top of the existing modules (`chibi.js`, `pan-zoom.js`, etc.) without modifying them.

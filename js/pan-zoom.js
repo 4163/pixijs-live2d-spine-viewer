@@ -8,6 +8,7 @@
   function initPanZoom(app) {
     let isPanMode = false;
     let isSuspended = false;
+    let isLoading = false;
     let isDragging = false;
     let lastPos = { x: 0, y: 0 };
     
@@ -35,7 +36,7 @@
 
     // Pointer drag & Pinch zoom
     app.view.addEventListener('pointerdown', e => {
-      if (!isPanMode || isSuspended) return;
+      if (!isPanMode || isSuspended || isLoading) return;
       activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       
       if (activePointers.size === 1) {
@@ -54,7 +55,7 @@
     });
 
     window.addEventListener('pointermove', e => {
-      if (!isPanMode || !activePointers.has(e.pointerId)) return;
+      if (!isPanMode || isLoading || !activePointers.has(e.pointerId)) return;
       activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
       if (isSuspended) {
@@ -118,7 +119,7 @@
 
     // Wheel zoom
     app.view.addEventListener('wheel', e => {
-      if (!isPanMode || isSuspended) return;
+      if (!isPanMode || isSuspended || isLoading) return;
       e.preventDefault();
 
       const scaleFactor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
@@ -146,7 +147,16 @@
         app.stage.scale.set(1, 1);
       },
       suspend: () => { isSuspended = true; },
-      resume: () => { isSuspended = false; }
+      resume: () => { isSuspended = false; },
+      setLoading: (v) => {
+        isLoading = !!v;
+        if (isLoading) {
+          isDragging = false;
+          activePointers.clear();
+          initialPinchDistance = null;
+        }
+      },
+      isLoading: () => isLoading
     };
   }
 

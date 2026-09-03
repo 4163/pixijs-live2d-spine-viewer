@@ -7,6 +7,7 @@
 
   // Theme
   const THEME_KEY = 'live2d-viewer-theme';
+  let isModelLoading = false;
 
   function getSystemTheme() {
     return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
@@ -118,6 +119,22 @@
           spinner.setAttribute('aria-hidden', 'true');
         }
       }
+
+      // Pan/zoom loading lock: only when pan mode is active
+      if (state.type === 'loading' || state.type === 'playground-loading') {
+        isModelLoading = true;
+      } else if (['ready', 'error', 'playground-ready', 'playground-empty'].includes(state.type)) {
+        isModelLoading = false;
+      }
+      const pzCtrl = window.panZoomController;
+      const isPanActive = pzCtrl ? pzCtrl.isActive() : false;
+      if (pzCtrl && pzCtrl.setLoading) pzCtrl.setLoading(isModelLoading);
+      const cw = document.getElementById('canvas-wrap');
+      if (cw) cw.classList.toggle('is-loading', isModelLoading && isPanActive);
+      const appForCursor = window.__sharedApp;
+      if (appForCursor && pzCtrl) {
+        appForCursor.stage.cursor = (isModelLoading && isPanActive) ? 'not-allowed' : (isPanActive ? 'move' : 'default');
+      }
     },
     onDormChange: function(active) {
       const dt = document.getElementById('dorm-toggle');
@@ -190,8 +207,11 @@
       const active = pz.isActive();
       if (panToggleBtn) panToggleBtn.setAttribute('aria-pressed', active);
       canvasWrap.classList.toggle('pan-mode', active);
-      sharedApp.stage.cursor = active ? 'move' : 'default';
+      canvasWrap.classList.toggle('is-loading', isModelLoading && active);
+      sharedApp.stage.cursor = (isModelLoading && active) ? 'not-allowed' : (active ? 'move' : 'default');
     };
+    // Expose for loading state updates from onStateChange
+    window.__syncPanUI = syncUI;
     syncUI();
     
     if (panToggleBtn) {

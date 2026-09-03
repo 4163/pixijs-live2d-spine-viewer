@@ -73,6 +73,10 @@ body {
 }
 
 /* Pan-mode cursor is handled by PixiJS stage.cursor */
+#canvas-wrap.is-loading,
+#canvas-wrap.is-loading canvas {
+  cursor: not-allowed !important;
+}
 
 #toolbar, #model-nav { user-select: none; }
 
