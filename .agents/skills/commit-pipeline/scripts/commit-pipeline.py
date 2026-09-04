@@ -129,7 +129,7 @@ def do_push(manual=False, additional=""):
     if AI_VARIANT:
         cmd.extend(["--variant", AI_VARIANT])
 
-    prompt = f"Follow the workflow in '{INSTRUCTIONS_PATH}'."
+    prompt = f"[COMMIT_PIPELINE]\nFollow the workflow in '{INSTRUCTIONS_PATH}'."
     if additional:
         # Prioritized user-provided context: takes precedence over anything the
         # AI infers from the diff/session data.

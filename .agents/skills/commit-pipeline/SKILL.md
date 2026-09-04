@@ -1,16 +1,18 @@
 ---
 name: commit-pipeline
-description: "Commit and push the working tree. Trigger only when explicitly told to commit or push."
+description: "Commit and push the working tree, or format commit messages. Trigger when explicitly told to commit, push, or write/serve commit messages."
 argument-hint: "<push, push-x, push-a, or commit context>"
 ---
 
 # Commit pipeline
 
-Use this skill when the user asks to run, emulate, update, or follow the repository commit pipeline. The root `Makefile` keeps the `make push`, `make push-x`, and `make push-a` commands as shortcuts to `.agents/skills/commit-pipeline/scripts/commit-pipeline.py`.
+Use this skill when the user asks to run, emulate, update, or follow the repository commit pipeline, or when the user asks to generate, format, or serve commit messages (e.g. header and body). The root `Makefile` keeps the `make push`, `make push-x`, and `make push-a` commands as shortcuts to `.agents/skills/commit-pipeline/scripts/commit-pipeline.py`.
 
 ## Critical constraint
 
-Never modify the working tree while running the commit pipeline. Do not edit, create, or delete files. The only permitted Git operations are staging, committing, and pushing. Do not rewrite history or create unnecessary micro-commits.
+Never modify the working tree while running the commit pipeline. Do not edit, create, or delete files. The permitted Git operations are staging (including partial staging via hunks/patching), committing, and pushing. Do not rewrite history or create unnecessary micro-commits.
+
+If invoked by the pipeline script itself (indicated by the `[COMMIT_PIPELINE]` marking, `Follow the workflow in '.../SKILL.md'` or `User-provided context` in the prompt). Do not attempt to run `commit-pipeline.py` or `Makefile` commit shortcuts (like `make push`). Instead, execute the raw `git` commands directly to complete the workflow.
 
 This constraint applies to the pipeline run itself. It does not forbid editing this skill when the user explicitly asks to update the pipeline.
 
@@ -49,3 +51,11 @@ Write commit messages from the staged diff and verified context:
 - Tense: write the whole commit message in past tense. The header and body bullets describe what the staged diff did, not what it will do.
 - Bullets: use them when the body has multiple points. Do not force active voice or present-tense action verbs. Prefer `Moved X`, `Kept Y`, or `Added Z` over `Moves X`, `Ensures Y`, or `Improves Z`.
 - Technical details: include complex or non-obvious implementation decisions. If session recovery was used, mention only relevant facts that affected the commit.
+
+### Serving messages to the user
+
+When the user asks for a header and body (or title and body):
+- Serve the header and body in a single copy-able code format block (e.g., ` ```text `).
+- Always separate header and body with a single blank line (whitespace-only line), regardless of paragraph or bullet body.
+- Prefer serving a regular paragraph body instead of bullet points.
+- While not preferred, bullets may still be used if needed when multiple distinct points benefit from list formatting.
