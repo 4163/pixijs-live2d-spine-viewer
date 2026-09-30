@@ -1,36 +1,54 @@
 ---
 name: familiarize
 description: Use at the very start of a session to familiarize yourself with this repository before proceeding with actual work.
-argument-hint: "<task to prepare for>"
+argument-hint: "<low|docs|skim|surface|normal> [task to prepare for]"
 ---
-
-```text
-recomended models to use for the initial familiarization task for specific harnesses:
-DeepSeek V4 Flash - High / Gemini 3.7 Flash - High / GPT 5.6 Terra - High
-```
 
 # Familiarize
 
-## 1. Learn the codebase
+Three tiers control how deep you go. The user specifies the tier, or you infer it from the request. Default is normal.
 
-- Walk the file and directory structure from the root down before diving into any single file. Build a mental map of how the project is organized.
-- Identify the architecture: languages and frameworks in use, how modules/services/layers are separated, where the entry points are (main files, routers, config), and how data and control flow through the system.
-- Read the package manifest(s) (`package.json`, `requirements.txt`, `Cargo.toml`, etc.), build/config files, and any existing README or architecture docs.
-- Note the conventions already in place: naming, folder layout, testing patterns, and style. New work should fit the codebase instead of fighting it.
-- **Most importantly**, read `.agents/AGENTS.md` and strictly adhere to the coding quality standards and architecture structure outlined. Treat that writing guidance as active even when the harness does not auto-load always-active skills. Explicitly confirm to the user that you have read and taken in the relevant rules.
-- If the task includes docs, prompts, comments, or user-facing copy, also read `.agents/skills/unslop/SKILL.md` and strictly follow it.
+## Tiers
 
-## 2. Gather past-session context only when it matches current work
+### Low / docs
 
-- Start from the current repository: working tree, recent commits, manifests, architecture docs, and relevant source files.
-- Use `session-recovery` only when the current-source pass gives you a concrete match to check: resume/recover/continue wording, a named or exported session, unfinished diffs, or a maintained plan/report/handoff that matches the branch, files, or recent commits.
-- Before reading a transcript, compare the candidate session date, changed files, branch/worktree hints, and summary against the working tree and recent commits. Skip stale or unrelated candidates.
-- Treat recovered notes as leads, not ground truth. Verify important details against the current source.
+Read agent guidelines and project documentation only. No codebase exploration.
 
-## 3. Use subagents to do this faster
+- `.agents/AGENTS.md`
+- `README.md`
+- Primary architecture docs and active skill guidelines if present (e.g. `.agents/architecture-state.md`, `.agents/skills/unslop/SKILL.md`, or verification skills)
 
-- If subagents are available, don't run all of the above serially yourself. Delegate.
-- Split the work by relevance: one subagent can map the file/directory structure, another can read architecture and manifest files, another can explore a specific subsystem in depth.
-- Delegate session-index or transcript recovery only after the session gate above passes. Give the subagent the exact match to check. It should report `none` if the session does not match the active task.
-- Have each subagent report back a short, focused summary rather than raw output. That keeps exploration costs off your main context window and reduces total token usage.
-- Reserve your own context for synthesis and decisions, not for absorbing raw exploration. That is what subagents are for.
+Do not read source files, manifests, or directory trees. Do not gather session context.
+
+### Skim / Surface
+
+Read guidelines (everything in Low) plus a surface-level pass over the codebase. No deep dives.
+
+- Walk the root directory tree and note the layout.
+- Read manifests (`package.json`, `Cargo.toml`, etc.).
+- Skim entry points and architecture docs, but do not open individual module files or trace call chains.
+
+Do not use subagents. Do not gather session context.
+
+### Normal
+
+Full codebase familiarization.
+
+- Walk the file and directory structure from the root down. Build a mental map of the project layout.
+- Identify the architecture: languages and frameworks, how modules/services/layers are separated, where the entry points are, and how data and control flow through the system.
+- Read manifests (`package.json`, `Cargo.toml`, etc.), build/config files, and existing architecture docs.
+- Note the conventions in place: naming, folder layout, testing patterns, style. New work fits the codebase, not the other way around.
+- Read `.agents/AGENTS.md` and strictly follow the coding quality standards and architecture rules. Confirm adherence to the user.
+- If the task involves docs, prompts, comments, or user-facing copy, also read `.agents/skills/unslop/SKILL.md` (if present).
+
+Do not gather session context. The `session-handoff` and `session-recovery` skills handle that separately when the user asks.
+
+## No session recovery during familiarization
+
+Do not read session-index entries, transcripts, or prior conversation context during familiarization. Session continuity is handled by `session-recovery` when explicitly requested.
+
+## Subagents
+
+If the harness supports subagents, delegate parts of the Normal tier to run in parallel (directory mapping, manifest reading, subsystem exploration). Have each subagent report a short summary, not raw output.
+
+If the harness does not support subagents, do the work yourself. Never use the `pseudo-subagents` skill as a substitute.
