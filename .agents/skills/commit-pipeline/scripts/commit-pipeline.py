@@ -6,10 +6,10 @@ import shutil
 import urllib.request
 
 # Configuration for AI Committer
-AI_CLI = "opencode"
+AI_CLI = shutil.which("opencode") or "opencode"
 AI_CMD = "run --auto"
-AI_MODEL = "opencode/muse-spark-1.2-contributor-free"
-AI_VARIANT = "xhigh"
+AI_MODEL = "opencode/deepseek-v4.1-flash-free"
+AI_VARIANT = "high"
 INSTRUCTIONS_PATH = ".agents/skills/commit-pipeline/SKILL.md"
 
 def get_config():
