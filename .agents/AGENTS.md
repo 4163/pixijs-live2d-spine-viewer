@@ -25,12 +25,13 @@ Coding standards, architecture rules, and agent workflow.
 - Avoid using browser automation/browser subagent. Use playwright for any complex frontend debugging.
 - When running playwright tests, execute them from the `playwright/` directory. Verify that behavior and layout match across all three browser projects (chromium, firefox, webkit) defined in `playwright.config.js`.
 - For writing work, read `.agents/skills/unslop/SKILL.md` and follow it even if the harness does not auto-load always-active skills. This applies to docs, prompts, comments, and user-facing copy.
+- For changes touching shared code, configs, or interfaces, read `.agents/skills/blast-radius/SKILL.md` to trace downstream consumers and prove safety with code.
 - Verify using `.agents/skills/verify-implementation/SKILL.md` when finishing a slice or when asked to "verify".
 - Validate using `.agents/skills/validate-changes/SKILL.md` when explicitly asked to "validate" code. Do not confuse "verify" (tests and docs) with "validate" (architecture review).
 
 ### Guardrails
 - **No automated git commits.** Never execute git commit commands or automate commits unless explicitly instructed. The user handles all commits manually or through the commit pipeline.
-- **Blast radius.** When modifying core cross-cutting surfaces (shared PIXI app bootstrap, model configs, asset cache interception, or library compatibility stubs), stop and prove you have not broken downstream consumers. Do not rely on speculation or writeups. Use the `.agents/skills/blast-radius/SKILL.md` workflow to execute actual checks and confirm safety.
+- **Downstream safety.** When modifying core cross-cutting surfaces (shared PIXI app bootstrap, model configs, asset cache interception, or library compatibility stubs), stop and prove you have not broken downstream consumers. Do not rely on speculation or writeups. Run targeted playwright checks and confirm nothing broke.
 - **Targeted testing via playwright.** Run only the relevant spec file, not the full suite. When no spec covers the changed surface, do not run playwright. Reserve full suite runs for final slice verification.
 - **Validate before presenting.** Every implementation plan, report, analysis, and roadmap must be compared against `.agents/skills/validate-changes/SKILL.md` rules before presenting it to the user. This applies to agent messages, artifacts, and any document written under `.agents/`. The message, artifact, or document must state at the top that this validation comparison was performed.
 - **Agent-facing plans.** For any implementation plan written under `.agents/`, treat it as a continuation doc that a cold agent on a different harness can pick up from a dirty tree without a handoff. Use ordered checklists with file:line references, accept criteria per item, and `[x]`/`[ ]`/`[~]` state. Lock definitions and deviation rules at the top so the plan does not drift across sessions.
