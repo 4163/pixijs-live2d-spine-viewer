@@ -22,7 +22,7 @@ Coding standards, architecture rules, and agent workflow.
 - Read every rule and referenced skill before starting work. Confirm adherence to the user.
 - Keep responses concise and focused on the task.
 - Follow existing code style and formatting for each directory and its associated files.
-- Avoid using browser automation/browser subagent. Use playwright for any complex frontend debugging.
+- Avoid using browser automation/browser subagent and computer use skill. Use playwright for any complex frontend debugging.
 - When running playwright tests, execute them from the `playwright/` directory. Verify that behavior and layout match across all three browser projects (chromium, firefox, webkit) defined in `playwright.config.js`.
 - For writing work, read `.agents/skills/unslop/SKILL.md` and follow it even if the harness does not auto-load always-active skills. This applies to docs, prompts, comments, and user-facing copy.
 - For changes touching shared code, configs, or interfaces, read `.agents/skills/blast-radius/SKILL.md` to trace downstream consumers and prove safety with code.
