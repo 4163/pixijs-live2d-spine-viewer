@@ -112,12 +112,16 @@ Models without this flag reuse the base `atlas.txt` + `spritemap.png` in dorm mo
 ### Cubism 2 vs Cubism 3
 Both are rendered by [pixi-live2d-display](https://github.com/guansss/pixi-live2d-display). The library auto-detects the format from the entry point file extension (`.model.json` = C2, `.model3.json` = C3).
 
-| Model / Costume | Format | Textures | Motions | Physics | Procedural Blink & Breath |
-|---|---|---|---|---|---|
-| **Classic Witch** (Normal & Damaged) | **C2** | 1024x1024 | 10 motions + idle | Yes (`springfield.physics.json`) | Yes (SDK core) |
-| **Stirring Mermaid** (Normal & Damaged) | **C2** | 1024x1024 | 1 idle only | No | Yes (SDK core) |
-| **Classic Witch** (Normal & Damaged) | **C3** | 2048x2048 | 11 motions + idle | No (`Physics: null`) | Motion curves only |
-| **Stirring Mermaid** (Normal & Damaged) | **C3** | 2048x2048 | 1 idle only | No (`Physics: null`) | Motion curves only |
+| Model / Costume | Format | Unique Motions | Touch Interactions | Mouse Tracking | Real-Time Physics | Eye Blink & Breath |
+|---|---|---|---|---|---|---|
+| **Classic Witch** | **C2** | 11 (5 idle, 5 tap, 1 shake) | Head, Body, Legs | Yes | Yes (`springfield.physics.json`) | Procedural (SDK core) + baked curves |
+| **Classic Witch** | **C3** | 11 (5 idle, 5 tap, 1 shake) | Head, Body, Arms | Yes | No (`Physics: null`) | Motion curves only |
+| **Classic Witch (Damaged)** | **C2** | 8 (3 idle, 5 tap) | Body | Yes (runtime remapped) | No | Procedural blink (single eye) + baked curves |
+| **Classic Witch (Damaged)** | **C3** | 8 (3 idle, 5 tap) | Body | Yes (runtime remapped) | No (`Physics: null`) | Motion curves only |
+| **Stirring Mermaid** | **C2** | 1 (idle only) | None | Yes (runtime remapped) | No | Procedural (SDK core) + baked curves |
+| **Stirring Mermaid** | **C3** | 1 (idle only) | None | Yes | No (`Physics: null`) | Motion curves only |
+| **Stirring Mermaid (Damaged)** | **C2** | 1 (idle only) | None | Yes (runtime remapped) | No | Procedural (SDK core) + baked curves |
+| **Stirring Mermaid (Damaged)** | **C3** | 1 (idle only) | None | Yes | No (`Physics: null`) | Motion curves only |
 
 ### Texture resolution upgrades (Cubism 2)
 Live2D `.moc` files use normalized UVs (0.0 to 1.0). If you have a higher-resolution texture atlas with the same layout (such as a 2048x2048 C3 dump or upscaler), drop it in to replace `texture_00.png`. No `.moc` changes or recompilation needed.
@@ -342,6 +346,7 @@ Debug scripts for troubleshooting:
 - Cubism 3 idle animations require capitalizing the motion group as `Idle` in `FileReferences.Motions`. Lowercase `idle` is ignored by `pixi-live2d-display`.
 - Stirring Mermaid C2 has only `daiji_idle_01.mtn`, no tap_body motions. `app.js` calls `model.motion()` which plays a random motion from the group. If the group is empty, nothing happens.
 - `pixi-live2d-display` v0.5.0-beta (guansss) may have edge cases with C3 model groups vs hit areas, and has a layout bug with C2 models that define absolute position (fixed in app.js by resetting `localTransform`).
+- Non-standard Live2D parameter IDs (such as shorthand names or PascalCase in C2) cause `pixi-live2d-display` to drop mouse tracking. Fixed in `app.js` via `normalizeLive2DParameters()`, which maps known aliases to active slots at load time.
 - Chibi mode stubs `PIXI.mesh.Mesh` to `PIXI.SimpleMesh` to prevent `_parentID` crashes during cleanup.
 - PixiJS v6 compat stubs in index.html: `cullus/gfSpinePiXi`'s pixi-spine reads Spine 2.x binary (.skel) on PixiJS v4. Official pixi-spine v6 only reads Spine 3.x+ JSON. Converting all .skel assets is impractical.
 - `relativeDraw: true` (default) enables dynamic centering + re-scaling on canvas resize. Set to `false` to keep the model at its initial position/scale.
