@@ -8,23 +8,76 @@
     "Physics": null,
     "Motions": {
       "idle": [
-        { "File": "motions/daiji_idle_01.motion3.json", "FadeInTime": 2.0, "FadeOutTime": 2.0 },
-        { "File": "motions/login.motion3.json", "FadeInTime": 2.0, "FadeOutTime": 2.0 },
-        { "File": "motions/wait_1.motion3.json", "FadeInTime": 2.0, "FadeOutTime": 2.0 }
+        {
+          "File": "motions/daiji_idle_01.motion3.json",
+          "FadeInTime": 2,
+          "FadeOutTime": 2
+        },
+        {
+          "File": "motions/login.motion3.json",
+          "FadeInTime": 2,
+          "FadeOutTime": 2
+        },
+        {
+          "File": "motions/wait_1.motion3.json",
+          "FadeInTime": 2,
+          "FadeOutTime": 2
+        }
       ],
       "tap_body": [
-        { "File": "motions/broken_1.motion3.json", "FadeOutTime": 0.0 },
-        { "File": "motions/broken_2.motion3.json", "FadeOutTime": 0.0 },
-        { "File": "motions/broken_3.motion3.json", "FadeOutTime": 0.0 },
-        { "File": "motions/broken_4.motion3.json", "FadeOutTime": 0.0 },
-        { "File": "motions/broken_5.motion3.json", "FadeOutTime": 0.0 }
+        {
+          "File": "motions/broken_1.motion3.json",
+          "FadeOutTime": 0
+        },
+        {
+          "File": "motions/broken_2.motion3.json",
+          "FadeOutTime": 0
+        },
+        {
+          "File": "motions/broken_3.motion3.json",
+          "FadeOutTime": 0
+        },
+        {
+          "File": "motions/broken_4.motion3.json",
+          "FadeOutTime": 0
+        },
+        {
+          "File": "motions/broken_5.motion3.json",
+          "FadeOutTime": 0
+        }
+      ],
+      "Idle": [
+        {
+          "File": "motions/daiji_idle_01.motion3.json",
+          "FadeInTime": 2,
+          "FadeOutTime": 2
+        },
+        {
+          "File": "motions/login.motion3.json",
+          "FadeInTime": 2,
+          "FadeOutTime": 2
+        },
+        {
+          "File": "motions/wait_1.motion3.json",
+          "FadeInTime": 2,
+          "FadeOutTime": 2
+        }
       ]
     }
   },
   "HitAreas": [
-    { "Name": "head", "Id": "D_REF.FACE" },
-    { "Name": "body", "Id": "D_REF.BODY" },
-    { "Name": "arm", "Id": "D_REF.ARM_L" }
+    {
+      "Name": "head",
+      "Id": "D_REF.FACE"
+    },
+    {
+      "Name": "body",
+      "Id": "D_REF.BODY"
+    },
+    {
+      "Name": "arm",
+      "Id": "D_REF.ARM_L"
+    }
   ],
   "Groups": []
 }

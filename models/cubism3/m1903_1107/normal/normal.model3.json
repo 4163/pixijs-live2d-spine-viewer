@@ -8,20 +8,42 @@
     "Physics": null,
     "Motions": {
       "idle": [
-        { "File": "motions/daiji_idle_01.motion3.json", "FadeInTime": 2.0, "FadeOutTime": 2.0 }
+        {
+          "File": "motions/daiji_idle_01.motion3.json",
+          "FadeInTime": 2,
+          "FadeOutTime": 2
+        }
+      ],
+      "Idle": [
+        {
+          "File": "motions/daiji_idle_01.motion3.json",
+          "FadeInTime": 2,
+          "FadeOutTime": 2
+        }
       ]
     }
   },
   "HitAreas": [
-    { "Name": "head", "Id": "D_REF.FACE" },
-    { "Name": "body", "Id": "D_REF.BODY" },
-    { "Name": "arm", "Id": "D_REF.ARM_L" }
+    {
+      "Name": "head",
+      "Id": "D_REF.FACE"
+    },
+    {
+      "Name": "body",
+      "Id": "D_REF.BODY"
+    },
+    {
+      "Name": "arm",
+      "Id": "D_REF.ARM_L"
+    }
   ],
   "Groups": [
     {
       "Target": "Parameter",
       "Name": "LipSync",
-      "Ids": [ "ParamMouthOpenY" ]
+      "Ids": [
+        "ParamMouthOpenY"
+      ]
     }
   ]
 }

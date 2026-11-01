@@ -110,7 +110,10 @@
         if (hitAreas.includes('head'))      model.motion('tap_head');
         else if (hitAreas.includes('body')) model.motion('tap_body');
         else if (hitAreas.includes('arm'))  model.motion('tap_arm');
-        else                                model.motion('idle');
+        else if (hitAreas.includes('leg'))  model.motion('tap_leg');
+        else {
+          if (!model.motion('idle')) model.motion('Idle');
+        }
       } catch (e) {
         console.warn(`${entry.name}: motion error`, e.message || e);
       }
