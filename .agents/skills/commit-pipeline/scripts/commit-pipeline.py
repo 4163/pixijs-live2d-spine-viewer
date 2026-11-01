@@ -5,8 +5,16 @@ import subprocess
 import shutil
 import urllib.request
 
+def resolve_ai_cli():
+    cli = shutil.which("opencode.exe") or shutil.which("opencode")
+    if cli and cli.lower().endswith((".cmd", ".bat")):
+        exe = os.path.join(os.path.dirname(cli), "node_modules", "opencode-ai", "bin", "opencode.exe")
+        if os.path.exists(exe):
+            return exe
+    return cli or "opencode"
+
 # Configuration for AI Committer
-AI_CLI = shutil.which("opencode") or "opencode"
+AI_CLI = resolve_ai_cli()
 AI_CMD = "run --auto"
 AI_MODEL = "opencode/deepseek-v4.1-flash-free"
 AI_VARIANT = "high"
