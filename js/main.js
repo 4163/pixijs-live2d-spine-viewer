@@ -387,6 +387,13 @@
     currentMode = null;
   }
 
+  function clearPlaygroundHash() {
+    if (window.location.hash === '#playground') {
+      const cleanPath = (window.location.pathname.replace(/^\/+/, '/') || '/') + window.location.search;
+      history.replaceState(null, '', cleanPath);
+    }
+  }
+
   async function switchMode(mode) {
     if (mode === currentMode) return;
     document.getElementById('info').textContent = 'Loading...';
@@ -396,8 +403,8 @@
     document.body.setAttribute('data-mode', mode);
     document.body.removeAttribute('data-active-pill');
 
-    if (mode === 'live2d' && window.location.hash === '#playground') {
-      history.replaceState(null, '', window.location.pathname + window.location.search);
+    if (mode === 'live2d') {
+      clearPlaygroundHash();
     }
 
     // Sync tab UI
@@ -427,9 +434,7 @@
           }
           if (currentMode === 'spine') {
             showDormToggle();
-            if (window.location.hash === '#playground') {
-              history.replaceState(null, '', window.location.pathname + window.location.search);
-            }
+            clearPlaygroundHash();
           }
           loadFn(sharedApp, m).catch(e => console.error('loadModel:', e));
         };
