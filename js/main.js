@@ -89,6 +89,9 @@
             html = `${state.modelName}: ${isTouch ? 'tap' : 'click'} to interact`;
           } else if (state.mode === 'spine') {
             html = `${state.modelName}: ${isTouch ? 'tap' : 'click'} to cycle animation (${state.defaultAnim || 'none'})`;
+            if (state.spine) {
+              state.spine.cursor = 'pointer';
+            }
           }
           break;
         case 'anim-cycle':

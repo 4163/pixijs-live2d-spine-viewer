@@ -1,6 +1,6 @@
 // pan-zoom.js: pan & zoom controller for a PIXI Application.
 // Usage: const panZoom = window.initPanZoom(app); panZoom.enable();
-// Returns { enable, disable, toggle, isActive, reset, suspend, resume }.
+// Returns { enable, disable, toggle, isActive, reset, suspend, resume, wasDragged }.
 
 (function () {
   'use strict';
@@ -11,6 +11,8 @@
     let isLoading = false;
     let isDragging = false;
     let lastPos = { x: 0, y: 0 };
+    let dragDistance = 0;
+    let wasPanned = false;
     
     // Touch tracking for pinch-to-zoom
     const activePointers = new Map();
@@ -41,6 +43,8 @@
       
       if (activePointers.size === 1) {
         isDragging = true;
+        dragDistance = 0;
+        wasPanned = false;
         lastPos = { x: e.clientX, y: e.clientY };
       } else if (activePointers.size === 2) {
         isDragging = false; // Disable single-finger drag during pinch
@@ -71,6 +75,10 @@
         const dx = e.clientX - lastPos.x;
         const dy = e.clientY - lastPos.y;
         lastPos = { x: e.clientX, y: e.clientY };
+        dragDistance += Math.hypot(dx, dy);
+        if (dragDistance > 8) {
+          wasPanned = true;
+        }
 
         const rect   = app.view.getBoundingClientRect();
         const ratioX = app.screen.width  / rect.width;
@@ -111,11 +119,23 @@
         lastPos = { x: remaining.x, y: remaining.y };
       } else if (activePointers.size === 0) {
         isDragging = false;
+        requestAnimationFrame(() => {
+          wasPanned = false;
+          dragDistance = 0;
+        });
       }
     };
 
     window.addEventListener('pointerup', removePointer);
     window.addEventListener('pointercancel', removePointer);
+
+    // Suppress clicks on canvas when a pan drag occurred
+    app.view.addEventListener('click', e => {
+      if (wasPanned) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+      }
+    }, true);
 
     // Wheel zoom
     app.view.addEventListener('wheel', e => {
@@ -156,7 +176,8 @@
           initialPinchDistance = null;
         }
       },
-      isLoading: () => isLoading
+      isLoading: () => isLoading,
+      wasDragged: () => wasPanned
     };
   }
 

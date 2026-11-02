@@ -293,9 +293,9 @@
     if (defaultAnim) playAnim(defaultAnim.name);
 
     if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
-      window.__viewerCallbacks.onStateChange({ type: 'ready', mode: 'spine', modelName: entry.name, defaultAnim: defaultAnim ? defaultAnim.name : 'none' });
+      window.__viewerCallbacks.onStateChange({ type: 'ready', mode: 'spine', modelName: entry.name, defaultAnim: defaultAnim ? defaultAnim.name : 'none', spine });
 
-    spine.on('pointerdown', () => {
+    function cycleAnimation() {
       if (anims.length < 2) return;
       let nextAnim = null;
       const startIdx = animIndex;
@@ -309,6 +309,12 @@
         if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
           window.__viewerCallbacks.onStateChange({ type: 'anim-cycle', modelName: entry.name, animName: nextAnim.name });
       }
+    }
+    spine.cycleAnimation = cycleAnimation;
+
+    spine.on('pointerup', () => {
+      if (window.panZoomController && window.panZoomController.wasDragged()) return;
+      cycleAnimation();
     });
   }
   window.loadChibiModel = loadChibiModel;
@@ -324,36 +330,21 @@
   function getDormMode() { return dormMode; }
   window.getDormMode = getDormMode;
 
+  function getCurrentSpine() { return currentSpine; }
+  window.getCurrentSpine = getCurrentSpine;
+
   async function initChibiMode(app, models) {
     while (app.stage.children.length > 0) app.stage.removeChildAt(0);
     currentSpine = null;
-    currentModelEntry = null;
-    if (window.__viewerCallbacks && window.__viewerCallbacks.onDormChange) window.__viewerCallbacks.onDormChange(dormMode);
 
     if (!models || models.length === 0) {
-      if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
+      if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange)
         window.__viewerCallbacks.onStateChange({ type: 'error', message: 'No Spine models found.' });
       return;
     }
-    await loadChibiModel(app, models[0]);
+    const dorm = typeof window.getDormMode === 'function' ? window.getDormMode() : false;
+    await loadChibiModel(app, models[0], dorm);
   }
   window.initChibiMode = initChibiMode;
-
-  function destroyChibi() {
-    if (!currentSpine) return;
-    currentSpine.autoUpdate = false;
-    if (currentSpine.state) currentSpine.state.clearTracks();
-    if (currentSpine.parent) currentSpine.parent.removeChild(currentSpine);
-    currentSpine.removeAllListeners();
-    const toDestroy = currentSpine;
-    requestAnimationFrame(() => {
-      try { toDestroy.destroy({ children: true, texture: false }); } catch (_) {}
-    });
-    currentSpine = null;
-    currentModelEntry = null;
-    dormMode = false;
-    if (window.__viewerCallbacks && window.__viewerCallbacks.onDormChange) window.__viewerCallbacks.onDormChange(false);
-  }
-  window.destroyChibi = destroyChibi;
 
 })();
