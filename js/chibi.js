@@ -13,6 +13,8 @@
   let currentSpine = null;
   let currentModelEntry = null;
   let dormMode = false;
+  const skeletonDataCache = (window.__MODEL_CACHE && window.__MODEL_CACHE.spine) || new Map();
+  if (window.__MODEL_CACHE) window.__MODEL_CACHE.spine = skeletonDataCache;
 
   function stripDel(obj) {
     if (typeof obj === 'string') return obj.replace(/\u007f/g, '');
@@ -92,23 +94,40 @@
 
     const dir = entry.dir;
     dormMode = useDorm !== undefined ? !!useDorm : dormMode;
+
+    const cacheKey = `${entry.id}:${dormMode ? 'dorm' : 'battle'}`;
+    let skeletonData = skeletonDataCache.get(cacheKey);
+
     if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
       window.__viewerCallbacks.onStateChange({ type: 'loading', modelName: entry.name, isDorm: dormMode });
 
-    let atlasText, skelBuffer, img;
-
-    try {
-      if (dormMode) {
-        skelBuffer = await fetchWithFallback(`${dir}/skeleton_dorm.skel`, `${dir}/skeleton.skel`, 'buffer', 'Dorm skel');
-        if (entry.dormAtlas) {
-          let dormAtlas = null;
-          try {
-            const r = await fetch(`${dir}/atlas_dorm.txt`);
-            if (r.ok) dormAtlas = await r.text();
-          } catch (_) {}
-          if (dormAtlas) {
-            atlasText = dormAtlas;
-            img = await loadImageWithFallback(`${dir}/spritemap_dorm.png`, `${dir}/spritemap.png`);
+    if (!skeletonData) {
+      let atlasText, skelBuffer, img;
+      try {
+        if (dormMode) {
+          skelBuffer = await fetchWithFallback(`${dir}/skeleton_dorm.skel`, `${dir}/skeleton.skel`, 'buffer', 'Dorm skel');
+          if (entry.dormAtlas) {
+            let dormAtlas = null;
+            try {
+              const r = await fetch(`${dir}/atlas_dorm.txt`);
+              if (r.ok) dormAtlas = await r.text();
+            } catch (_) {}
+            if (dormAtlas) {
+              atlasText = dormAtlas;
+              img = await loadImageWithFallback(`${dir}/spritemap_dorm.png`, `${dir}/spritemap.png`);
+            } else {
+              const [t, i] = await Promise.all([
+                fetch(`${dir}/atlas.txt`).then(r => { if (!r.ok) throw new Error('base atlas not found'); return r.text(); }),
+                new Promise((resolve, reject) => {
+                  const i2 = new Image();
+                  i2.onload = () => resolve(i2);
+                  i2.onerror = reject;
+                  i2.src = `${dir}/spritemap.png`;
+                })
+              ]);
+              atlasText = t;
+              img = i;
+            }
           } else {
             const [t, i] = await Promise.all([
               fetch(`${dir}/atlas.txt`).then(r => { if (!r.ok) throw new Error('base atlas not found'); return r.text(); }),
@@ -123,77 +142,68 @@
             img = i;
           }
         } else {
-          const [t, i] = await Promise.all([
-            fetch(`${dir}/atlas.txt`).then(r => { if (!r.ok) throw new Error('base atlas not found'); return r.text(); }),
+          [atlasText, skelBuffer, img] = await Promise.all([
+            fetch(`${dir}/atlas.txt`).then(r => { if (!r.ok) throw new Error('atlas not found'); return r.text(); }),
+            fetch(`${dir}/skeleton.skel`).then(r => { if (!r.ok) throw new Error('skel not found'); return r.arrayBuffer(); }),
             new Promise((resolve, reject) => {
-              const i2 = new Image();
-              i2.onload = () => resolve(i2);
-              i2.onerror = reject;
-              i2.src = `${dir}/spritemap.png`;
+              const i = new Image();
+              i.onload = () => resolve(i);
+              i.onerror = reject;
+              i.src = `${dir}/spritemap.png`;
             })
           ]);
-          atlasText = t;
-          img = i;
         }
-      } else {
-        [atlasText, skelBuffer, img] = await Promise.all([
-          fetch(`${dir}/atlas.txt`).then(r => { if (!r.ok) throw new Error('atlas not found'); return r.text(); }),
-          fetch(`${dir}/skeleton.skel`).then(r => { if (!r.ok) throw new Error('skel not found'); return r.arrayBuffer(); }),
-          new Promise((resolve, reject) => {
-            const i = new Image();
-            i.onload = () => resolve(i);
-            i.onerror = reject;
-            i.src = `${dir}/spritemap.png`;
-          })
-        ]);
+      } catch (e) {
+        console.warn(`${entry.name}: failed to load model files`, e.message || e);
+        if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
+          window.__viewerCallbacks.onStateChange({ type: 'error', modelName: entry.name });
+        return;
       }
-    } catch (e) {
-      console.warn(`${entry.name}: failed to load model files`, e.message || e);
-      if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
-        window.__viewerCallbacks.onStateChange({ type: 'error', modelName: entry.name });
-      return;
-    }
-    
-    // Abort if another load started (even from another module) while we were waiting
-    if (window.__loadToken !== myToken) return;
+      
+      // Abort if another load started (even from another module) while we were waiting
+      if (window.__loadToken !== myToken) return;
 
-    let skeletonJson, atlas, skeletonData, spine;
-    try {
-      // Step 1: Spine 2.1.27 binary to JSON via custom shim
-      const skelBin = new SkeletonBinary();
-      skelBin.data = new Uint8Array(skelBuffer);
-      skelBin.initJson();
-      skeletonJson = stripDel(skelBin.json);
+      try {
+        // Step 1: Spine 2.1.27 binary to JSON via custom shim
+        const skelBin = new SkeletonBinary();
+        skelBin.data = new Uint8Array(skelBuffer);
+        skelBin.initJson();
+        const skeletonJson = stripDel(skelBin.json);
 
-      // Step 2: Build atlas (single spritemap page), strip DEL chars from region names
-      const baseTex = new PIXI.BaseTexture(img);
-      atlas = await new Promise(resolve => {
-        new PIXI.spine.SpineRuntime.Atlas(atlasText.replace(/^\u007f/gm, ''), (_line, cb) => cb(baseTex), resolve);
-      });
+        // Step 2: Build atlas (single spritemap page), strip DEL chars from region names
+        const baseTex = new PIXI.BaseTexture(img);
+        const atlas = await new Promise(resolve => {
+          new PIXI.spine.SpineRuntime.Atlas(atlasText.replace(/^\u007f/gm, ''), (_line, cb) => cb(baseTex), resolve);
+        });
 
-      // Step 3: Ensure all events referenced in animations exist
-      if (skeletonJson.events && skeletonJson.animations) {
-        for (const animName in skeletonJson.animations) {
-          const evts = skeletonJson.animations[animName].events;
-          if (evts) {
-            for (const evt of evts) {
-              if (evt.name && !skeletonJson.events[evt.name])
-                skeletonJson.events[evt.name] = {};
+        // Step 3: Ensure all events referenced in animations exist
+        if (skeletonJson.events && skeletonJson.animations) {
+          for (const animName in skeletonJson.animations) {
+            const evts = skeletonJson.animations[animName].events;
+            if (evts) {
+              for (const evt of evts) {
+                if (evt.name && !skeletonJson.events[evt.name])
+                  skeletonJson.events[evt.name] = {};
+              }
             }
           }
         }
-      }
 
-      // Step 4: Parse skeleton JSON
-      const atlasParser  = new PIXI.spine.SpineRuntime.AtlasAttachmentParser(atlas);
-      const jsonParser   = new PIXI.spine.SpineRuntime.SkeletonJsonParser(atlasParser);
-      skeletonData = jsonParser.readSkeletonData(skeletonJson, dir.split('/').pop());
-    } catch (e) {
-      console.warn(`${entry.name}: parse/atlas error`, e.message || e);
-      if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) window.__viewerCallbacks.onStateChange({ type: 'error', modelName: entry.name });
-      return;
+        // Step 4: Parse skeleton JSON
+        const atlasParser  = new PIXI.spine.SpineRuntime.AtlasAttachmentParser(atlas);
+        const jsonParser   = new PIXI.spine.SpineRuntime.SkeletonJsonParser(atlasParser);
+        skeletonData = jsonParser.readSkeletonData(skeletonJson, dir.split('/').pop());
+        skeletonDataCache.set(cacheKey, skeletonData);
+      } catch (e) {
+        console.warn(`${entry.name}: parse/atlas error`, e.message || e);
+        if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) window.__viewerCallbacks.onStateChange({ type: 'error', modelName: entry.name });
+        return;
+      }
     }
 
+    if (window.__loadToken !== myToken) return;
+
+    let spine;
     // Step 5: Create Spine display object
     const vc = window.VIEWER_CONFIG || {};
     const entryCfg = (vc.layout && vc.layout[entry.id]) || {};

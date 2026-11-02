@@ -6,6 +6,7 @@
   'use strict';
 
   var cache = Object.create(null);
+  cache.spine = new Map();
   window.__MODEL_CACHE = cache;
 
   // Patch 1: Live2D models via XHRLoader.loader middleware

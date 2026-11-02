@@ -1,5 +1,6 @@
-// app.js: Live2D (Cubism 2 + 3) viewer, via pixi-live2d-display (guansss).
-// "L2D element": the Live2D model (PIXI display object) drawn on canvas.
+// app.js: Live2D (Cubism 2 + 3) viewer logic.
+// Patches pixi-live2d-display to auto-fit models, normalize parameters for
+// mouse tracking, and handle click/tap interactions.
 
 (function () {
   'use strict';
@@ -7,6 +8,7 @@
   let currentModel = null;
   let _onMove = null;
   let _onLeave = null;
+  const live2dModelCache = new Map();
 
   function resetLive2DFocus() {
     if (currentModel && currentModel.internalModel && currentModel.internalModel.focusController) {
@@ -122,27 +124,46 @@
       window.removeEventListener('blur', _onLeave);
       _onLeave = null;
     }
-    if (currentModel) { currentModel.destroy(); currentModel = null; }
+    if (currentModel && app) {
+      app.stage.removeChild(currentModel);
+      currentModel = null;
+    }
+    for (const [, m] of live2dModelCache.entries()) {
+      try { m.destroy(); } catch (_) {}
+    }
+    live2dModelCache.clear();
   }
   window.destroyLive2D = destroyLive2D;
 
   // Load a single model from a manifest entry {id, name, type, json}
   async function loadLive2DModel(app, entry) {
-    if (currentModel) {
-      app.stage.removeChild(currentModel);
-      if (_onMove) app.stage.off('pointermove', _onMove);
-      _onMove = null;
-      if (_onLeave) {
-        window.removeEventListener('pointerout', _onLeave);
-        window.removeEventListener('blur', _onLeave);
-        _onLeave = null;
-      }
-      currentModel.destroy();
-      currentModel = null;
-    }
-
     window.__loadToken = (window.__loadToken || 0) + 1;
     const myToken = window.__loadToken;
+
+    // Cache hit: instant synchronous model swap in 0ms (no loading spinner, no blank frame)
+    if (live2dModelCache.has(entry.id)) {
+      const cached = live2dModelCache.get(entry.id);
+      if (currentModel && currentModel !== cached) {
+        app.stage.removeChild(currentModel);
+      }
+      currentModel = cached;
+      if (!currentModel.parent) {
+        app.stage.addChild(currentModel);
+      }
+      repositionLive2D();
+      if (typeof currentModel.update === 'function') currentModel.update(16);
+      app.renderer.render(app.stage);
+
+      if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
+        window.__viewerCallbacks.onStateChange({ type: 'ready', mode: 'live2d', modelName: entry.name });
+      return;
+    }
+
+    // Cache miss: remove previous model immediately so the loading spinner bridges the gap
+    if (currentModel) {
+      app.stage.removeChild(currentModel);
+      currentModel = null;
+    }
 
     if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
       window.__viewerCallbacks.onStateChange({ type: 'loading', modelName: entry.name });
@@ -157,14 +178,11 @@
       return;
     }
     
-    // Abort if another load started (even from another module) while we were waiting
+    // Abort if another load started while we were waiting
     if (window.__loadToken !== myToken) {
       model.destroy();
       return;
     }
-
-    app.stage.addChild(model);
-    currentModel = model;
 
     // Cubism 2 layout bug fix: pixi-live2d-display sometimes applies an
     // incorrect localTransform on C2 models (absolute position from model.json).
@@ -193,20 +211,6 @@
     model.x = app.screen.width / 2;
     model.y = app.screen.height * baseY + offsetY;
 
-    if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
-      window.__viewerCallbacks.onStateChange({ type: 'ready', mode: 'live2d', modelName: entry.name });
-
-    _onMove = e => model.focus(e.data.global.x, e.data.global.y);
-    app.stage.on('pointermove', _onMove);
-
-    _onLeave = e => {
-      if (!e || !e.relatedTarget) {
-        resetLive2DFocus();
-      }
-    };
-    window.addEventListener('pointerout', _onLeave);
-    window.addEventListener('blur', _onLeave);
-
     model.on('hit', hitAreas => {
       try {
         if (hitAreas.includes('head'))      model.motion('tap_head');
@@ -220,14 +224,41 @@
         console.warn(`${entry.name}: motion error`, e.message || e);
       }
     });
+
+    live2dModelCache.set(entry.id, model);
+
+    app.stage.addChild(model);
+    currentModel = model;
+
+    // Render new model to WebGL canvas BEFORE removing the loading spinner from DOM
+    if (typeof model.update === 'function') model.update(16);
+    app.renderer.render(app.stage);
+
+    if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
+      window.__viewerCallbacks.onStateChange({ type: 'ready', mode: 'live2d', modelName: entry.name });
+
+    if (!_onMove) {
+      _onMove = e => {
+        if (currentModel) currentModel.focus(e.data.global.x, e.data.global.y);
+      };
+      app.stage.on('pointermove', _onMove);
+    }
+
+    if (!_onLeave) {
+      _onLeave = e => {
+        if (!e || !e.relatedTarget) {
+          resetLive2DFocus();
+        }
+      };
+      window.addEventListener('pointerout', _onLeave);
+      window.addEventListener('blur', _onLeave);
+    }
   }
   window.loadLive2DModel = loadLive2DModel;
 
   // Called by main.js with the pre-fetched model list
   async function initLive2DMode(app, models) {
-    while (app.stage.children.length > 0) app.stage.removeChildAt(0);
-    currentModel = null;
-    _onMove = null;
+    destroyLive2D();
 
     if (!models || models.length === 0) {
       if (window.__viewerCallbacks && window.__viewerCallbacks.onStateChange) 
